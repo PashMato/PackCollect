@@ -1,5 +1,9 @@
 package com.eran.packcollect.Fragments;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,20 +14,42 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.R;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.kotlin.AutocompleteSupportFragmentKt;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SignInFragment extends Fragment {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();;
@@ -47,6 +73,11 @@ public class SignInFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (!Places.isInitialized()) {
+            Places.initializeWithNewPlacesApiEnabled(view.getContext(), getString(R.string.google_maps_key));
+        }
+
+
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
@@ -66,6 +97,7 @@ public class SignInFragment extends Fragment {
                 String phoneNumber = String.valueOf(phoneNumber_et.getText());
                 String homeAddress = String.valueOf(homeAddresss_et.getText());
 
+                searchAddress(homeAddress);
 
                 mAuth.createUserWithEmailAndPassword( editedFullName + "@gmail.com", password)
                         .addOnCompleteListener(task -> {
@@ -106,5 +138,40 @@ public class SignInFragment extends Fragment {
             }
         });
 
+    }
+
+
+    public void searchAddress(String query) {
+        // 1. Encode the query and prepare the URL
+        String encodedQuery = Uri.encode(query);
+        String url = "https://nominatim.openstreetmap.org/search?q=" + encodedQuery + "&format=json&addressdetails=1&limit=5";
+
+        // 2. Create the request
+        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject item = response.getJSONObject(i);
+                            String displayName = item.getString("display_name");
+                            Log.d("OSM_SEARCH", "Found: " + displayName);
+                            // Add this string to a List for your UI
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> Log.e("OSM_SEARCH", "Error: " + error.getMessage())
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // REQUIRED: Identify your app to Nominatim
+                Map<String, String> headers = new HashMap<>();
+                headers.put("User-Agent", "MyPersonalProjectApp");
+                return headers;
+            }
+        };
+
+        // 3. Add to the queue
+        Volley.newRequestQueue(getView().getContext()).add(request);
     }
 }
