@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment2">
+    <fragment
+        android:id="@+id/requestsFragments"
+        android:name="com.eran.packcollect.Fragments.RequestsFragment"
+        android:label="RequestsFragments" >
+        <action
+            android:id="@+id/action_requestsFragments_to_newRequestFragment"
+            app:destination="@id/newRequestFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newRequestFragment"
+        android:name="com.eran.packcollect.Fragments.NewRequestFragment"
+        android:label="NewRequestFragment" >
+        <action
+            android:id="@+id/action_newRequestFragment_to_requestsFragments2"
+            app:destination="@id/requestsFragments" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment2"
+        android:name="com.eran.packcollect.Fragments.LoginFragment"
+        android:label="LoginFragment" >
+        <action
+            android:id="@+id/action_loginFragment2_to_requestsFragments"
+            app:destination="@id/requestsFragments" />
+        <action
+            android:id="@+id/action_loginFragment2_to_signInFragment"
+            app:destination="@id/signInFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.eran.packcollect.Fragments.SignInFragment"
+        android:label="SignInFragment" >
+        <action
+            android:id="@+id/action_signInFragment_to_requestsFragments"
+            app:destination="@id/requestsFragments" />
+        <action
+            android:id="@+id/action_signInFragment_to_loginFragment2"
+            app:destination="@id/loginFragment2" />
+    </fragment>
+</navigation>
