@@ -57,22 +57,28 @@ public class LoginFragment extends Fragment {
         login_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String fullName = String.valueOf(fullName_et.getText());
-                String editedFullName = fullName.replace(" ", ".");
-                String password = String.valueOf(password_et.getText());
+                String fullName = fullName_et.getText().toString().trim();
+                String editedFullName = fullName.trim()
+                        .replaceAll("\\s+", "."); // handles multiple spaces
+                String password = password_et.getText().toString().trim();
+
+                String validation = checkValidation(fullName, password);
+                if (!validation.isEmpty()) {
+                    Toast.makeText(view.getContext(), validation, Toast.LENGTH_LONG).show();
+                    return;
+                }
 
                 mAuth.signInWithEmailAndPassword(editedFullName + "@gmail.com", password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-
-                            Log.d("DataBase", "User login!");
-                            Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
-                            navController.navigate(R.id.action_loginFragment2_to_requestsFragments);
-                        } else {
+                        if (!task.isSuccessful()) {
                             Log.d("DataBase", task.getException().getMessage());
                             Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            return;
                         }
+
+                        Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
+                        navController.navigate(R.id.action_loginFragment2_to_requestsFragments);
                     }
                 });
             }
@@ -86,5 +92,22 @@ public class LoginFragment extends Fragment {
             }
         });
 
+    }
+
+    private String checkValidation(String fullName, String password) {
+        // --- Validation ---
+        if (fullName.isEmpty()) {
+            return "Full name is required";
+        }
+
+        if (!fullName.contains(" ")) {
+            return "Please enter first and last name";
+        }
+
+        if (password.isEmpty()) {
+            return "Password is required";
+        }
+
+        return "";
     }
 }

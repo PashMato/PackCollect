@@ -2,10 +2,13 @@
     <string name="app_name">PackCollect</string>
     <string name="password">Password</string>
     <string name="full_name">Full Name</string>
-    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign up</string>
     <string name="home_address">Home Address</string>
-    <string name="sign_in_text">Have user yet? Login</string>
+    <string name="sign_up_text">Have user yet? Login</string>
     <string name="phone_number">Phone Number</string>
     <string name="login">Login</string>
-    <string name="login_text">Don\'t have user yet? Sign in</string>
+    <string name="login_text">Don\'t have user yet? Sign up</string>
+    <string name="package_description">Package Description</string>
+    <string name="package_location">Package Location</string>
+    <string name="additional_details">Additional Details</string>
 </resources>

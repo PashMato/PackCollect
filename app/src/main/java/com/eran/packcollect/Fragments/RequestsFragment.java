@@ -12,6 +12,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.eran.packcollect.R;
+import com.eran.packcollect.workers.DeleteExpiredPackagesWorker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class RequestsFragment extends Fragment {
@@ -27,6 +28,7 @@ public class RequestsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        DeleteExpiredPackagesWorker.scheduleDailyDelete(view.getContext());
 
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);

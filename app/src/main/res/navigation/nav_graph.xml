@@ -32,7 +32,7 @@
     </fragment>
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.eran.packcollect.Fragments.SignInFragment"
+        android:name="com.eran.packcollect.Fragments.SignUpFragment"
         android:label="SignInFragment" >
         <action
             android:id="@+id/action_signInFragment_to_requestsFragments"

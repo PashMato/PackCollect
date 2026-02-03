@@ -13,10 +13,10 @@
 
         <!-- Package Location -->
         <EditText
-            android:id="@+id/package_location_te"
+            android:id="@+id/package_location_et"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Package Location"
+            android:hint="@string/package_location"
             android:inputType="text"
             android:padding="8dp"
             android:gravity="start|center_vertical"/>
@@ -27,10 +27,10 @@
 
         <!-- Package Data / Contents -->
         <EditText
-            android:id="@+id/package_data_te"
+            android:id="@+id/package_description_et"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:hint="Package Data / Contents"
+            android:hint="@string/package_description"
             android:inputType="text"
             android:padding="8dp"
             android:gravity="start|center_vertical"/>
@@ -41,10 +41,10 @@
 
         <!-- Additional Details -->
         <EditText
-            android:id="@+id/additional_details_te"
+            android:id="@+id/additional_details_et"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:hint="Additional Details"
+            android:hint="@string/additional_details"
             android:inputType="textMultiLine"
             android:gravity="start|top"
             android:padding="8dp"

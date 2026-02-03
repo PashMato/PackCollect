@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.firebase.database)
     implementation(libs.places)
+    implementation(libs.work.runtime)
 //    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
@@ -59,4 +60,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
 
     implementation("com.android.volley:volley:1.2.1")
+
+    // the daemon dependencies to delete packages and check location
+    implementation("androidx.work:work-runtime:2.8.1")
 }
