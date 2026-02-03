@@ -52,11 +52,6 @@ public class SignUpFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (!Places.isInitialized()) {
-            Places.initializeWithNewPlacesApiEnabled(view.getContext(), getString(R.string.google_maps_key));
-        }
-
-
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 

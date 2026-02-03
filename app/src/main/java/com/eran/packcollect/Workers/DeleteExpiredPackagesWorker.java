@@ -1,8 +1,7 @@
-package com.eran.packcollect.workers;
+package com.eran.packcollect.Workers;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
@@ -13,11 +12,8 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public class DeleteExpiredPackagesWorker extends Worker {

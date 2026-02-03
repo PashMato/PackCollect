@@ -11,4 +11,7 @@
     <string name="package_description">Package Description</string>
     <string name="package_location">Package Location</string>
     <string name="additional_details">Additional Details</string>
+    <string name="details">Details:</string>
+    <string name="location">Location:</string>
+    <string name="None">None</string>
 </resources>

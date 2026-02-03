@@ -15,6 +15,7 @@ import java.util.Calendar;
 public class Package {
     static final short EXPIRATION_IN_WEEKS = 2;
 
+    public String packageId;
     public String ownerUid;
     public long expiresAt;
     public Address packageAddress;
@@ -44,6 +45,7 @@ public class Package {
 
         // push generates a unique key for this package
         DatabaseReference newPackageRef = packagesRef.push();
+        pack.packageId = newPackageRef.getKey(); // save the package id
 
         newPackageRef.setValue(pack)
                 .addOnSuccessListener(onSuccessListener)
