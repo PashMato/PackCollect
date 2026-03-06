@@ -9,6 +9,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -19,7 +21,9 @@ import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
 import com.eran.packcollect.Table.PackagesAdapter;
 import com.eran.packcollect.Workers.DeleteExpiredPackagesWorker;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -60,6 +64,32 @@ public class RequestsFragment extends Fragment {
         recyclerView.setAdapter(adapter);
         updateRecyclerView(view.getContext());
 
+        DrawerLayout drawer = view.findViewById(R.id.drawer_layout);
+        MaterialToolbar toolbar = view.findViewById(R.id.top_toolbar);
+
+        ActionBarDrawerToggle toggle =
+                new ActionBarDrawerToggle(
+                        requireActivity(),
+                        drawer,
+                        toolbar,
+                        R.string.open,
+                        R.string.close);
+
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView nav = view.findViewById(R.id.navigation_view);
+
+        nav.setNavigationItemSelectedListener(item -> {
+
+            if (item.getItemId() == R.id.nav_logout) {
+                FirebaseAuth.getInstance().signOut();
+                navController.navigate(R.id.action_requestsFragments_to_loginFragment2);
+            }
+
+            drawer.closeDrawers();
+            return true;
+        });
 
         new_request_fab = view.findViewById(R.id.add_request_fab);
         new_request_fab.setOnClickListener(new View.OnClickListener() {

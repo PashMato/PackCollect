@@ -14,4 +14,7 @@
     <string name="details">Details:</string>
     <string name="location">Location:</string>
     <string name="None">None</string>
+
+    <string name="open">Open navigation drawer</string>
+    <string name="close">Close navigation drawer</string>
 </resources>

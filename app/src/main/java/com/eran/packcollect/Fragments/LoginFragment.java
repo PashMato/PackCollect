@@ -28,7 +28,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginFragment extends Fragment {
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
     private Button login_bt;
     private TextView sign_in_tv;
@@ -83,6 +83,11 @@ public class LoginFragment extends Fragment {
                 });
             }
         });
+
+        if (mAuth.getCurrentUser() != null) {
+            Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
+            navController.navigate(R.id.action_loginFragment2_to_requestsFragments);
+        }
 
         sign_in_tv = view.findViewById(R.id.sign_in_text);
         sign_in_tv.setOnClickListener(new View.OnClickListener() {
