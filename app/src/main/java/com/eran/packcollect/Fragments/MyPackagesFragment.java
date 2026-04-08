@@ -1,0 +1,200 @@
+package com.eran.packcollect.Fragments;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.content.Context;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.eran.packcollect.DataBase.Package;
+import com.eran.packcollect.R;
+import com.eran.packcollect.Table.OnItemClick;
+import com.eran.packcollect.Table.PackagesAdapter;
+import com.eran.packcollect.Workers.LocationTrackingService;
+import com.eran.packcollect.Workers.PackageAlertReceiver;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MyPackagesFragment extends Fragment {
+    private NavController navController;
+    private FloatingActionButton newPackage_FAB;
+
+    PackagesAdapter adapter;
+    RecyclerView recyclerView;
+
+    LinearLayout emptyState_LL;
+    ProgressBar loadingBar_PB;
+
+    Context context;
+
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.my_packages, container, false);
+    }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        context = view.getContext();
+
+        // make sure we don't have and notifications from the previous user
+        askPermission();
+        PackageAlertReceiver.cancelAllNotifications(context);
+
+        // loading UI
+        emptyState_LL = view.findViewById(R.id.emptyStateLayout);
+        loadingBar_PB = view.findViewById(R.id.loading_spinner);
+
+        // 'view' here is the root view of your fragment layout
+        navController = Navigation.findNavController(view);
+
+        recyclerView = view.findViewById(R.id.packages_rv);
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        adapter = new PackagesAdapter(new ArrayList<Package>(), new OnItemClick() {
+            @Override
+            public void OnClick(Package pkg) {
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("package", pkg); // Passing the data
+
+                navController.navigate(R.id.action_requestsFragments_to_viewPackageFragment, bundle);
+            }
+        });
+
+        recyclerView.setAdapter(adapter);
+        updateFromDatabase();
+
+        new MainManu(this, view, context, navController, FragmentMode.MY_PACKAGES);
+
+        newPackage_FAB = view.findViewById(R.id.add_request_fab);
+        newPackage_FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                navController.navigate(R.id.action_requestsFragments_to_newRequestFragment);
+            }
+        });
+
+        askPermission(); // TODO: when the user excepts all of the permissions call the background service
+        LocationTrackingService.start(context);
+    }
+
+
+    private void updateFromDatabase() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user == null) {
+            // not logged in
+            return;
+        }
+
+        List<Package> packageList = new ArrayList<>();
+        String uid = user.getUid();
+
+        DatabaseReference packagesRef = FirebaseDatabase.getInstance().getReference("packages");
+        Query query = packagesRef.orderByChild("ownerUid").equalTo(uid);
+
+        emptyState_LL.setVisibility(View.GONE);
+        loadingBar_PB.setVisibility(View.VISIBLE);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                long timeNow = System.currentTimeMillis();
+
+                packageList.clear();
+
+                //
+                for (DataSnapshot pkgSnapshot : snapshot.getChildren()) {
+                    Package pkg = pkgSnapshot.getValue(Package.class);
+
+                    if (pkg == null) {
+                        continue;
+                    }
+
+                    if (pkg.expiresAt <= timeNow) {
+                        Log.i("Firebase", "Deleting Package `" + pkg.additionalNotes + "`");
+                        pkgSnapshot.getRef().removeValue();
+                        continue;
+                    }
+                        pkg.packageId = pkgSnapshot.getKey();
+                        packageList.add(pkg);
+                }
+
+                askPermission();
+                PackageAlertReceiver.cancelAllNotifications(context);
+
+                // create notifications for all of the packages
+                for (Package pack : packageList) {
+                    String address = null;
+                    if (pack.packageAddress != null) {
+                        address = pack.packageAddress.address;
+                    }
+                    PackageAlertReceiver.createNotification(context, address, pack.expiresAt);
+                }
+
+                adapter.Packages = packageList;
+                adapter.notifyDataSetChanged();
+
+                emptyState_LL.setVisibility(packageList.isEmpty() ? View.VISIBLE : View.GONE);
+                loadingBar_PB.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", error.getMessage());
+            }
+        });
+    }
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission granted! You can now send notifications.
+                } else {
+                    // Explain to the user that notifications are disabled.
+                }
+            });
+    private void askPermission() {
+        final String[] permissions = new String[] {
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+        };
+
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(context, permission) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                continue;
+            }
+
+            requestPermissionLauncher.launch(permission);
+        }
+    }
+}

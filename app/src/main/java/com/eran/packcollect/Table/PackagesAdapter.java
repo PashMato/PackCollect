@@ -1,7 +1,7 @@
 package com.eran.packcollect.Table;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +17,11 @@ import java.util.List;
 
 public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ItemViewHolder> {
     public List<Package> Packages;
-    private Context context;
+    private OnItemClick onClickListener;
 
-    public PackagesAdapter(List<Package> Packages, Context c) {
+    public PackagesAdapter(List<Package> Packages, OnItemClick onClickListener) {
         this.Packages = Packages;
-        context = c;
+        this.onClickListener = onClickListener;
     }
 
     @NonNull
@@ -40,8 +40,15 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ItemVi
         Package item = Packages.get(position);
 
         holder.packId = item.packageId;
-        holder.Description.setText(item.description);
-        holder.Location.setText(context.getString(R.string.location) + " " + (item.packageAddress != null ? item.packageAddress.address : "null"));
+        holder.Details.setText(item.description);
+        holder.Location.setText(item.packageAddress != null ? item.packageAddress.address : "null");
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickListener.OnClick(item);
+            }
+        });
     }
 
     @Override
@@ -56,11 +63,11 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ItemVi
 
     class ItemViewHolder extends RecyclerView.ViewHolder {
         String packId;
+        TextView Details;
         TextView Location;
-        TextView Description;
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
-            Description = itemView.findViewById(R.id.description_text);
+            Details = itemView.findViewById(R.id.details_title);
             Location = itemView.findViewById(R.id.location_text);
         }
     }

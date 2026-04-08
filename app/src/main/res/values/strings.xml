@@ -8,13 +8,22 @@
     <string name="phone_number">Phone Number</string>
     <string name="login">Login</string>
     <string name="login_text">Don\'t have user yet? Sign up</string>
-    <string name="package_description">Package Description</string>
+    <string name="description">Description</string>
     <string name="package_location">Package Location</string>
-    <string name="additional_details">Additional Details</string>
+    <string name="additional_notes">Additional Notes</string>
     <string name="details">Details:</string>
-    <string name="location">Location:</string>
+    <string name="location">Location</string>
     <string name="None">None</string>
 
     <string name="open">Open navigation drawer</string>
     <string name="close">Close navigation drawer</string>
+    <string name="no_packages_found_nearby">No packages found nearby!</string>
+    <string name="you_have_no_packages">You have no packages!</string>
+    <string name="save_package">Save Package</string>
+    <string name="edit_package">Edit Package</string>
+    <string name="package_details">Package Details</string>
+    <string name="go_back">Go back</string>
+    <string name="my_packages">My Packages</string>
+    <string name="package_owner">package owner</string>
+    <string name="call">Call</string>
 </resources>

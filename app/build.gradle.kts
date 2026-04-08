@@ -63,4 +63,6 @@ dependencies {
 
     // the daemon dependencies to delete packages and check location
     implementation("androidx.work:work-runtime:2.8.1")
+
+    implementation("androidx.work:work-runtime:2.9.0")
 }

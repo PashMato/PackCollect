@@ -2,9 +2,9 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/drawer_layout_collect"
     android:padding="10dp">
 
     <!-- MAIN CONTENT -->
@@ -13,10 +13,10 @@
         android:layout_height="match_parent">
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/top_toolbar"
+            android:id="@+id/top_toolbar1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:title="Requests"
+            android:title="Collect Pack"
             android:paddingTop="15dp"
             android:paddingBottom="10dp"
             app:layout_constraintTop_toTopOf="parent"
@@ -24,24 +24,52 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/requests_rv"
+            android:id="@+id/collect_rv"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:padding="8dp"
-            app:layout_constraintTop_toBottomOf="@id/top_toolbar"
+            app:layout_constraintTop_toBottomOf="@id/top_toolbar1"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/add_request_fab"
+        <LinearLayout
+            android:id="@+id/emptyStateLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/ic_input_add"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="75dp"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:src="@drawable/gs_public_vd_24"
+                app:tint="?attr/colorControlNormal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/no_packages_found_nearby"
+                app:tint="?attr/colorControlNormal"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/loading_spinner"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:visibility="visible"
+            android:indeterminateTint="#2196F3"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

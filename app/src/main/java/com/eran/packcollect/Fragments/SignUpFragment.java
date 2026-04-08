@@ -22,7 +22,6 @@ import com.eran.packcollect.Location.SearchLocationCallback;
 import com.eran.packcollect.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.Places;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -31,14 +30,14 @@ import com.google.firebase.database.FirebaseDatabase;
 public class SignUpFragment extends Fragment {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
-    private Button sign_in_bt;
-    private TextView login_tv;
+    private Button signIn_BT;
+    private TextView login_TV;
 
 
-    private EditText fullName_et;
-    private EditText password_et;
-    private EditText phoneNumber_et;
-    private EditText homeAddresss_et;
+    private EditText fullName_ET;
+    private EditText password_ET;
+    private EditText phoneNumber_ET;
+    private EditText homeAddress_ET;
 
     private Address addressLocation = null;
 
@@ -56,11 +55,11 @@ public class SignUpFragment extends Fragment {
         navController = Navigation.findNavController(view);
 
 
-        fullName_et = view.findViewById(R.id.user_name_et);
-        password_et = view.findViewById(R.id.password_et);
-        phoneNumber_et = view.findViewById(R.id.phone_et);
-        homeAddresss_et = view.findViewById(R.id.address_et);
-        homeAddresss_et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        fullName_ET = view.findViewById(R.id.user_name_et);
+        password_ET = view.findViewById(R.id.password_et);
+        phoneNumber_ET = view.findViewById(R.id.phone_et);
+        homeAddress_ET = view.findViewById(R.id.address_et);
+        homeAddress_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (hasFocus) { // exit the function if the focus "begins"
@@ -85,19 +84,19 @@ public class SignUpFragment extends Fragment {
                         Log.e("OSM", e.getMessage());
                         addressLocation = null;
                     }
-                }, String.valueOf(homeAddresss_et.getText()));
+                }, String.valueOf(homeAddress_ET.getText()));
             }
         });
 
-        sign_in_bt = view.findViewById(R.id.sign_in_bt);
-        sign_in_bt.setOnClickListener(new View.OnClickListener() {
+        signIn_BT = view.findViewById(R.id.sign_in_bt);
+        signIn_BT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String fullName = fullName_et.getText().toString().trim();
+                String fullName = fullName_ET.getText().toString().trim();
                 String editedFullName = fullName.trim()
                         .replaceAll("\\s+", "."); // handles multiple spaces
-                String password = password_et.getText().toString().trim();
-                String phoneNumber = phoneNumber_et.getText().toString().trim();
+                String password = password_ET.getText().toString().trim();
+                String phoneNumber = phoneNumber_ET.getText().toString().trim();
                 
                 String validation = checkValidation(fullName, password, phoneNumber);
                 if (!validation.isEmpty()) {
@@ -137,8 +136,8 @@ public class SignUpFragment extends Fragment {
             }
         });
 
-        login_tv = view.findViewById(R.id.login_text);
-        login_tv.setOnClickListener(new View.OnClickListener() {
+        login_TV = view.findViewById(R.id.login_text);
+        login_TV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 navController.navigate(R.id.action_signInFragment_to_loginFragment2);

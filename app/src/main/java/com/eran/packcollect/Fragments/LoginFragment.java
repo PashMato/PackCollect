@@ -16,26 +16,22 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.eran.packcollect.DataBase.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import com.eran.packcollect.R;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginFragment extends Fragment {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
-    private Button login_bt;
-    private TextView sign_in_tv;
+    private Button login_BT;
+    private TextView signIn_TV;
 
 
-    private EditText fullName_et;
-    private EditText password_et;
+    private EditText fullName_ET;
+    private EditText password_ET;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -50,17 +46,17 @@ public class LoginFragment extends Fragment {
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
-        fullName_et = view.findViewById(R.id.user_name_et);
-        password_et = view.findViewById(R.id.password_et);
+        fullName_ET = view.findViewById(R.id.user_name_et);
+        password_ET = view.findViewById(R.id.password_et);
 
-        login_bt = view.findViewById(R.id.login_bt);
-        login_bt.setOnClickListener(new View.OnClickListener() {
+        login_BT = view.findViewById(R.id.login_bt);
+        login_BT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String fullName = fullName_et.getText().toString().trim();
+                String fullName = fullName_ET.getText().toString().trim();
                 String editedFullName = fullName.trim()
                         .replaceAll("\\s+", "."); // handles multiple spaces
-                String password = password_et.getText().toString().trim();
+                String password = password_ET.getText().toString().trim();
 
                 String validation = checkValidation(fullName, password);
                 if (!validation.isEmpty()) {
@@ -89,8 +85,8 @@ public class LoginFragment extends Fragment {
             navController.navigate(R.id.action_loginFragment2_to_requestsFragments);
         }
 
-        sign_in_tv = view.findViewById(R.id.sign_in_text);
-        sign_in_tv.setOnClickListener(new View.OnClickListener() {
+        signIn_TV = view.findViewById(R.id.sign_in_text);
+        signIn_TV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 navController.navigate(R.id.action_loginFragment2_to_signInFragment);

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
@@ -11,10 +13,11 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Address {
+public class Address implements Serializable {
     public String address;
     public double lat = 0;
     public double lon = 0;
@@ -95,9 +98,15 @@ public class Address {
             if (addr.has("country")) shortName.append(", ").append(addr.getString("country"));
 
         } catch (JSONException e) {
-            Log.e("LocationMissingAddr", e.getMessage());
+            Log.e("LocationMissingAddress", e.getMessage());
         }
 
         return shortName.toString();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return address;
     }
 }
