@@ -26,6 +26,7 @@ import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
 import com.eran.packcollect.Table.OnItemClick;
 import com.eran.packcollect.Table.PackagesAdapter;
+import com.eran.packcollect.Workers.IncomingNotificationService;
 import com.eran.packcollect.Workers.LocationTrackingService;
 import com.eran.packcollect.Workers.PackageAlertReceiver;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -104,6 +105,7 @@ public class MyPackagesFragment extends Fragment {
 
         askPermission(); // TODO: when the user excepts all of the permissions call the background service
         LocationTrackingService.start(context);
+        IncomingNotificationService.start(context);
     }
 
 

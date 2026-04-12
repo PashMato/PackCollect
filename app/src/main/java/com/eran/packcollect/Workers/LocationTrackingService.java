@@ -3,56 +3,70 @@ package com.eran.packcollect.Workers;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import com.google.android.gms.location.*;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.*;
 
+import com.eran.packcollect.FragmentContainer; // Ensure this points to your actual Main Activity
+import com.eran.packcollect.R;
+import com.eran.packcollect.DataBase.NotificationFB;
 import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.Location.Address;
+import com.google.android.gms.location.*;
+        import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.*;
 
-import java.util.ArrayList;
+        import java.util.ArrayList;
 import java.util.List;
 
 public class LocationTrackingService extends Service {
+
+    // IDs for different notification types
+    private static final int SERVICE_NOTIFICATION_ID = 1;        // Keeps service alive
+    private static final int PACKAGES_FOUND_NOTIFICATION_ID = 2; // Popup for packages
+
+    private static final String CHANNEL_ID = "LocationServiceChannel";
+    private static final String CHANNEL_NAME = "Location Service";
+
     private FusedLocationProviderClient fusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    private static final String CHANNEL_ID = "LocationServiceChannel";
 
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) { return null; }
 
     @Override
     public void onCreate() {
         super.onCreate();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Setup location request (High Accuracy)
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000 * 5) // 5 minutes TODO: change back to 5 min
-                .setMinUpdateIntervalMillis(1000) // max interval time 2 minutes
+        // Update every 5 minutes (300,000ms) for battery efficiency
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000 * 60 * 5)
+                .setMinUpdateIntervalMillis(60 * 1000)
                 .build();
 
         locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) return;
-                for (Location location : locationResult.getLocations()) { // Android batches locations to save battery
-                    checkProximityToPackages(location, new OnPackagesFoundListener() {
-                        @Override
-                        public void onReceived(List<Package> packages) {
-                            if (packages == null) {
-                                return;
-                            }
-
-                            for (Package pkg : packages) {
-                                sendArrivalNotification(pkg.additionalNotes);
-                            }
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                for (Location location : locationResult.getLocations()) {
+                    checkProximityToPackages(location, packages -> {
+                        if (packages != null && !packages.isEmpty()) {
+                            // Only 1 notification for all found packages
+                            sendPackageFoundNotification(packages.size());
+                        } else {
+                            // Remove the popup if no packages are nearby anymore
+                            cancelPackageNotification();
                         }
                     });
                 }
@@ -63,25 +77,68 @@ public class LocationTrackingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         createNotificationChannel();
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Package Tracker Running")
-                .setContentText("Monitoring location for nearby packages...")
-                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+
+        // start the persistent "I am running" notification
+        Notification persistentNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Package Tracker Active")
+                .setContentText("Monitoring for nearby packages...")
+                .setSmallIcon(R.drawable.ic_location_service)
+                .setPriority(NotificationCompat.PRIORITY_LOW) // Quiet
+                .setOngoing(true)
                 .build();
 
-        startForeground(1, notification);
-        startLocationUpdates();
+        startForeground(SERVICE_NOTIFICATION_ID, persistentNotification);
 
+        startLocationUpdates();
         return START_STICKY;
+    }
+
+    private void sendPackageFoundNotification(int count) {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Intent to open the app when clicked
+        Intent intent = new Intent(this, FragmentContainer.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        String text = (count == 1) ? "There is 1 package nearby!" : "There are " + count + " packages nearby!"; // TODO: implement a multi lan
+
+        Notification popup = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_package)
+                .setContentTitle("Packages Found!")
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // Pops up on screen
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)     // Removes itself when clicked
+                .setOnlyAlertOnce(true)  // Don't keep buzzing every 5 seconds
+                .build();
+
+        manager.notify(PACKAGES_FOUND_NOTIFICATION_ID, popup);
+    }
+
+    private void cancelPackageNotification() {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.cancel(PACKAGES_FOUND_NOTIFICATION_ID);
+    }
+
+    private void createNotificationChannel() {
+        NotificationChannel serviceChannel = new NotificationChannel(
+                CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) manager.createNotificationChannel(serviceChannel);
     }
 
     private void startLocationUpdates() {
         try {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
         } catch (SecurityException e) {
-            Log.e("Service", "Location permission missing");
+            Log.e("Service", "Location permission missing: " + e.getMessage());
         }
     }
+
+    // --- Static Firebase Logic ---
 
     public interface OnPackagesFoundListener {
         void onReceived(List<Package> packages);
@@ -110,7 +167,7 @@ public class LocationTrackingService extends Service {
             final int[] processed = {0}; // to be able to count all of the answers from the data base
 
             // read the all of the packages
-            packagesRef.orderByChild("ownerUid").addListenerForSingleValueEvent(new ValueEventListener() {
+            packagesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
                     List<Package> matches = new ArrayList<>();
@@ -122,7 +179,7 @@ public class LocationTrackingService extends Service {
                         Package pkg = pkgSnapshot.getValue(Package.class);
 
                         if (pkg == null || pkg.packageAddress == null) {
-                            checkEnd(processed, (int)total, matches, listener);
+                            checkEnd(processed, (int) total, matches, listener);
                             continue;
                         }
 
@@ -175,21 +232,16 @@ public class LocationTrackingService extends Service {
         }
     }
 
-    private void sendArrivalNotification(String info) {
-        // Use the notification logic we built earlier here!
-        Log.i("Service", "Near package: " + info);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (fusedLocationClient != null) {
+            fusedLocationClient.removeLocationUpdates(locationCallback);
+        }
     }
-
-    private void createNotificationChannel() {
-        NotificationChannel serviceChannel = new NotificationChannel(
-                CHANNEL_ID, "Location Service", NotificationManager.IMPORTANCE_LOW);
-        getSystemService(NotificationManager.class).createNotificationChannel(serviceChannel);
-    }
-
-    @Override public IBinder onBind(Intent intent) { return null; }
 
     public static void start(Context context) {
-        Intent serviceIntent = new Intent(context, LocationTrackingService.class);
-        context.startForegroundService(serviceIntent);
+        Intent intent = new Intent(context, LocationTrackingService.class);
+        context.startForegroundService(intent);
     }
 }

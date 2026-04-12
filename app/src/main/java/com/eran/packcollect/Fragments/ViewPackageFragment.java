@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.eran.packcollect.DataBase.Notification;
+import com.eran.packcollect.DataBase.NotificationFB;
 import com.eran.packcollect.DataBase.NotificationModes;
 import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
@@ -117,7 +117,10 @@ public class ViewPackageFragment extends Fragment {
         dailButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Notification.sendNotification(ownerUid, currentPackage.packageId, NotificationModes.APPROVE_PICK_UP);
+                if (!NotificationFB.sendNotification(ownerUid, currentPackage.packageId, NotificationModes.APPROVE_PICK_UP)) {
+                    // if we sent invalid notification
+                    return;
+                }
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:" + ownerPhoneNumber));
@@ -136,9 +139,5 @@ public class ViewPackageFragment extends Fragment {
             dailButton.setVisibility(View.VISIBLE);
             editFab.setVisibility(View.GONE);
         }
-    }
-
-    private void fetchOwnerEmail(String uid, TextView targetTextView) {
-
     }
 }
