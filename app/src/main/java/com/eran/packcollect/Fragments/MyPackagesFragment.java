@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.content.Context;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +56,37 @@ public class MyPackagesFragment extends Fragment {
 
     Context context;
 
+    ItemTouchHelper.SimpleCallback swipeHandler = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            // Return false because we are not implementing drag-and-drop
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            // get the position of the swiped item
+            if (adapter == null) {
+                return;
+            }
+
+            int position = viewHolder.getAdapterPosition();
+            Package pack = adapter.getPackagesAt(position);
+
+            // remove the package from the data base
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("packages").child(pack.packageId);
+
+            ref.removeValue().addOnSuccessListener(aVoid -> {
+                // remove the package on the ui side
+                adapter.notifyItemRemoved(position);
+                adapter.Packages.remove(position);
+            }).addOnFailureListener(e -> {
+                Log.e("FireBase", "Couldn't delete package: " + e.getMessage());
+                Toast.makeText(context, "Couldn't delete package", Toast.LENGTH_SHORT).show();
+            });
+
+        }
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -80,6 +113,10 @@ public class MyPackagesFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.packages_rv);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeHandler);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
         adapter = new PackagesAdapter(new ArrayList<Package>(), new OnItemClick() {
             @Override
             public void OnClick(Package pkg) {
