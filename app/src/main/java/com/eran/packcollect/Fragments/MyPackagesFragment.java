@@ -101,7 +101,6 @@ public class MyPackagesFragment extends Fragment {
         context = view.getContext();
 
         // make sure we don't have and notifications from the previous user
-        askPermission();
         PackageAlertReceiver.cancelAllNotifications(context);
 
         // loading UI
@@ -128,7 +127,6 @@ public class MyPackagesFragment extends Fragment {
         });
 
         recyclerView.setAdapter(adapter);
-        updateFromDatabase();
 
         new MainManu(this, view, context, navController, FragmentMode.MY_PACKAGES);
 
@@ -140,9 +138,20 @@ public class MyPackagesFragment extends Fragment {
             }
         });
 
-        askPermission(); // TODO: when the user excepts all of the permissions call the background service
-        LocationTrackingService.start(context);
-        IncomingNotificationService.start(context);
+        askPermission(new PermissionCallback() {
+            @Override
+            public void onSuccess() {
+                updateFromDatabase();
+
+                LocationTrackingService.start(context);
+                IncomingNotificationService.start(context);
+            }
+
+            @Override
+            public void onFailure() {
+                Toast.makeText(context, "The app can't work properly without the required permissions", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
@@ -170,7 +179,6 @@ public class MyPackagesFragment extends Fragment {
 
                 packageList.clear();
 
-                //
                 for (DataSnapshot pkgSnapshot : snapshot.getChildren()) {
                     Package pkg = pkgSnapshot.getValue(Package.class);
 
@@ -187,7 +195,6 @@ public class MyPackagesFragment extends Fragment {
                         packageList.add(pkg);
                 }
 
-                askPermission();
                 PackageAlertReceiver.cancelAllNotifications(context);
 
                 // create notifications for all of the packages
@@ -213,27 +220,56 @@ public class MyPackagesFragment extends Fragment {
         });
     }
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    // Permission granted! You can now send notifications.
-                } else {
-                    // Explain to the user that notifications are disabled.
+    // Define a variable to hold your listeners temporarily
+    private PermissionCallback permissionCallback;
+    private final ActivityResultLauncher<String[]> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                // Check if all requested permissions were granted
+                if (result.isEmpty()) {
+                    // if calling this function twice before the user answered the result will be empty
+                    return;
+                }
+
+                boolean allGranted = true;
+                for (Boolean granted : result.values()) {
+                    if (!granted) {
+                        allGranted = false;
+                        break;
+                    }
+                }
+
+                if (permissionCallback != null) {
+                    if (allGranted) {
+                        permissionCallback.onSuccess();
+                    } else {
+                        permissionCallback.onFailure();
+                    }
+
+                    permissionCallback = null;
                 }
             });
-    private void askPermission() {
-        final String[] permissions = new String[] {
+
+    private void askPermission(@NonNull PermissionCallback callback) {
+        /// if calling this function twice before the user answered the result will be empty
+        this.permissionCallback = callback;
+
+        String[] permissions = {
                 Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
         };
 
-        for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission) ==
-                    PackageManager.PERMISSION_GRANTED) {
-                continue;
+        List<String> permissionsToRequest = new ArrayList<>();
+        for (String p : permissions) {
+            if (ContextCompat.checkSelfPermission(context, p) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(p);
             }
+        }
 
-            requestPermissionLauncher.launch(permission);
+        if (permissionsToRequest.isEmpty()) { // Everything is already granted, call the callback immediately
+            callback.onSuccess();
+        } else {
+            // Launch the system dialog for all missing permissions at once
+            requestPermissionLauncher.launch(permissionsToRequest.toArray(new String[0]));
         }
     }
 }

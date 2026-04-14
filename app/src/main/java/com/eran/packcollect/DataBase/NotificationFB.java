@@ -18,7 +18,10 @@ public class NotificationFB {
     private String packageUid;
     private NotificationModes notificationMode;
 
-    public NotificationFB() {} // fo the firebase
+    public NotificationFB() {
+        // TODO: delete this
+        notificationId = "null";
+    } // fo the firebase
     private NotificationFB(String senderUid, String receiverUid, String packageUid, NotificationModes notificationMode) {
         this.senderUid = senderUid;
         this.receiverUid = receiverUid;
