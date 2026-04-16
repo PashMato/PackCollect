@@ -82,7 +82,7 @@ public class MyPackagesFragment extends Fragment {
                 adapter.Packages.remove(position);
             }).addOnFailureListener(e -> {
                 Log.e("FireBase", "Couldn't delete package: " + e.getMessage());
-                Toast.makeText(context, "Couldn't delete package", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, getString(R.string.cannot_delete_package), Toast.LENGTH_SHORT).show();
             });
 
         }
@@ -149,7 +149,7 @@ public class MyPackagesFragment extends Fragment {
 
             @Override
             public void onFailure() {
-                Toast.makeText(context, "The app can't work properly without the required permissions", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, getString(R.string.required_permissions), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -187,7 +187,7 @@ public class MyPackagesFragment extends Fragment {
                     }
 
                     if (pkg.expiresAt <= timeNow) {
-                        Log.i("Firebase", "Deleting Package `" + pkg.additionalNotes + "`");
+                        Log.i("Firebase", getString(R.string.deleting_package) + " `" + pkg.additionalNotes + "`");
                         pkgSnapshot.getRef().removeValue();
                         continue;
                     }

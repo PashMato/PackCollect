@@ -78,7 +78,7 @@ public class EditPackage extends Fragment {
 
                     @Override
                     public void onNoResult(String query) {
-                        Toast.makeText(view.getContext(), "No location found named '" + query + "'", Toast.LENGTH_LONG).show();
+                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + "'" + query + "'", Toast.LENGTH_LONG).show();
                         addressLocation = null;
                     }
 
@@ -124,14 +124,14 @@ public class EditPackage extends Fragment {
                         bundle.putSerializable("mode", fragmentMode);
 
                         navController.navigate(action, bundle);
-                        Toast.makeText(view.getContext(), "Package saved", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), getString(R.string.package_saved), Toast.LENGTH_SHORT).show();
                     }
                 };
 
                 OnFailureListener onFailureListener = new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(view.getContext(), "Failed to save package", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), getString(R.string.package_save_failed), Toast.LENGTH_SHORT).show();
                         Log.e("DATABASE", "Package write failed: ", e);
                     }
                 };
@@ -174,15 +174,15 @@ public class EditPackage extends Fragment {
 
     private String checkValidation(String packDescription, String packAdditionalDetails) {
        if (addressLocation == null) {
-           return "Package Location is invalid";
+           return getString(R.string.package_location_invalid);
        }
 
         if (packDescription.isBlank()) {
-            return "Package Description is empty";
+            return getString(R.string.package_description_empty);
         }
 
         if (packAdditionalDetails.isBlank()) {
-            return "Package Additional Details is empty";
+            return getString(R.string.package_notes_empty);
         }
 
         return "";

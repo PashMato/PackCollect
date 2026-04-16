@@ -75,7 +75,7 @@ public class SignUpFragment extends Fragment {
 
                     @Override
                     public void onNoResult(String query) {
-                        Toast.makeText(view.getContext(), "No location found named '" + query + "'", Toast.LENGTH_LONG).show();
+                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + " '" + query + "'", Toast.LENGTH_LONG).show();
                         addressLocation = null;
                     }
 
@@ -107,7 +107,7 @@ public class SignUpFragment extends Fragment {
                 mAuth.createUserWithEmailAndPassword( editedFullName + "@gmail.com", password)
                         .addOnCompleteListener(task -> {
                             if (!task.isSuccessful()) {
-                                Toast.makeText(getContext(), "Signup failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), getString(R.string.sign_up_failed) + ": " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                 Log.e("DataBase", "Signup failed: " + task.getException().getMessage());
                                 return;
                             }
@@ -123,11 +123,9 @@ public class SignUpFragment extends Fragment {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(getContext(), "User created!", Toast.LENGTH_SHORT).show();
                                         Log.d("DataBase", "User Created!");
                                         navController.navigate(R.id.action_signInFragment_to_requestsFragments);
                                     } else {
-                                        Toast.makeText(getContext(), "DB error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         Log.e("DataBase", "DB error: " + task.getException().getMessage());
                                     }
                                 }
@@ -150,29 +148,29 @@ public class SignUpFragment extends Fragment {
     private String checkValidation(String fullName, String password, String phoneNumber) {
         // --- Validation ---
         if (fullName.isEmpty()) {
-            return "Full name is required";
+            return getString(R.string.full_name_required);
         }
 
         if (!fullName.contains(" ")) {
-            return "Please enter first and last name";
+            return getString(R.string.enter_first_last_name);
         }
 
         if (password.isEmpty()) {
-            return "Password is required";
+            return getString(R.string.password_required);
         }
 
         if (phoneNumber.isEmpty()) {
-            return "Phone number is required";
+            return getString(R.string.phone_number_required);
         }
 
         // Basic phone check (digits only, 9–15 digits)
         if (!phoneNumber.matches("\\d{9,15}")) {
-            return "Invalid phone number";
+            return getString(R.string.invalid_phone_number);
         }
 
         // Check if the location is right
         if (addressLocation == null) {
-            return "Invalid Location";
+            return getString(R.string.invalid_location);
         }
         
         return "";

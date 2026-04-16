@@ -36,8 +36,6 @@ public class LocationTrackingService extends Service {
     private static final int PACKAGES_FOUND_NOTIFICATION_ID = 2; // Popup for packages
 
     private static final String CHANNEL_ID = "LocationServiceChannel";
-    private static final String CHANNEL_NAME = "Location Service";
-
     private FusedLocationProviderClient fusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
@@ -80,8 +78,8 @@ public class LocationTrackingService extends Service {
 
         // start the persistent "I am running" notification
         Notification persistentNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Package Tracker Active")
-                .setContentText("Monitoring for nearby packages...")
+                .setContentTitle(getString(R.string.package_tracker_active))
+                .setContentText(getString(R.string.monitoring_packages))
                 .setSmallIcon(R.drawable.ic_location_service)
                 .setPriority(NotificationCompat.PRIORITY_LOW) // Quiet
                 .setOngoing(true)
@@ -103,11 +101,11 @@ public class LocationTrackingService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String text = (count == 1) ? "There is 1 package nearby!" : "There are " + count + " packages nearby!"; // TODO: implement a multi lan
+        String text = getString(R.string.there_are) + count + getString(R.string.packages_nearby);
 
         Notification popup = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_package)
-                .setContentTitle("Packages Found!")
+                .setContentTitle(getString(R.string.packages_found))
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH) // Pops up on screen
                 .setContentIntent(pendingIntent)
@@ -125,7 +123,7 @@ public class LocationTrackingService extends Service {
 
     private void createNotificationChannel() {
         NotificationChannel serviceChannel = new NotificationChannel(
-                CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+                CHANNEL_ID, getString(R.string.location_service), NotificationManager.IMPORTANCE_LOW);
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager != null) manager.createNotificationChannel(serviceChannel);
     }
@@ -188,7 +186,7 @@ public class LocationTrackingService extends Service {
                         Location.distanceBetween(userLocation.getLatitude(), userLocation.getLongitude(),
                                 pkg.packageAddress.lat, pkg.packageAddress.lon, results);
 
-                        if (results[0] > 150000) { // If within 1500 meters TODO: bring back to 1500m
+                        if (results[0] > 1_500) { // If within 1500 meters
                             checkEnd(processed, (int)total, matches, listener);
                             continue;
                         }

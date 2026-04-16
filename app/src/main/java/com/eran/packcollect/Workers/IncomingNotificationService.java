@@ -38,9 +38,10 @@ public class IncomingNotificationService extends Service {
 
         // Keep service alive
         Notification persistentNote = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Checking for messages")
+                .setContentTitle(getString(R.string.checking_for_messages))
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setSilent(true)
                 .build();
 
         startForeground(SERVICE_ID, persistentNote);
@@ -77,38 +78,38 @@ public class IncomingNotificationService extends Service {
             @Override public void onChildMoved(@NonNull DataSnapshot s, @Nullable String p) {}
             @Override public void onCancelled(@NonNull DatabaseError e) {}
         });
-
-        showDecisionNotification(new NotificationFB()); // TODO: delete this line
     }
 
     private void showDecisionNotification(NotificationFB note) {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-//        // Intent for YES
-//        Intent yesIntent = new Intent(this, NotificationActionReceiver.class);
-//        yesIntent.setAction("ACTION_YES");
-//        yesIntent.putExtra("notificationId", note.getNotificationId());
-//        PendingIntent yesPending = PendingIntent.getBroadcast(this, (note.getNotificationId() + "yes").hashCode(),
-//                yesIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-//
-//        // Intent for NO
-//        Intent noIntent = new Intent(this, NotificationActionReceiver.class);
-//        noIntent.setAction("ACTION_NO");
-//        noIntent.putExtra("notificationId", note.getNotificationId());
-//        PendingIntent noPending = PendingIntent.getBroadcast(this, (note.getNotificationId() + "no").hashCode(),
-//                noIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        // Intent for YES
+        Intent yesIntent = new Intent(this, NotificationActionReceiver.class);
+        yesIntent.setAction("ACTION_YES");
+        yesIntent.putExtra("notificationId", note.getNotificationId());
+        yesIntent.putExtra("packageId", note.getPackageUid());
+        PendingIntent yesPending = PendingIntent.getBroadcast(this, (note.getNotificationId() + "yes").hashCode(),
+                yesIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // Intent for NO
+        Intent noIntent = new Intent(this, NotificationActionReceiver.class);
+        noIntent.setAction("ACTION_NO");
+        noIntent.putExtra("notificationId", note.getNotificationId());
+        noIntent.putExtra("packageId", note.getPackageUid());
+        PendingIntent noPending = PendingIntent.getBroadcast(this, (note.getNotificationId() + "no").hashCode(),
+                noIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification popup = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_package)
-                .setContentTitle("Package Collected?")
-                .setContentText("A user is at your location to collect a package.")
+                .setContentTitle(getString(R.string.package_collected))
+                .setContentText(getString(R.string.package_collected_message))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-//                .addAction(android.R.drawable.ic_input_add, "Yes", yesPending)
-//                .addAction(android.R.drawable.ic_delete, "No", noPending)
+                .addAction(android.R.drawable.ic_input_add, getString(R.string.yes), yesPending)
+                .addAction(android.R.drawable.ic_delete, getString(R.string.no), noPending)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .build();
-
+        Random random = new Random();
         manager.notify(note.getNotificationId().hashCode(), popup);
     }
 }

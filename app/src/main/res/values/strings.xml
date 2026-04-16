@@ -1,29 +1,87 @@
 <resources>
+    <!-- App -->
     <string name="app_name">PackCollect</string>
-    <string name="password">Password</string>
-    <string name="full_name">Full Name</string>
-    <string name="sign_up">Sign up</string>
-    <string name="home_address">Home Address</string>
-    <string name="sign_up_text">Have user yet? Login</string>
-    <string name="phone_number">Phone Number</string>
-    <string name="login">Login</string>
-    <string name="login_text">Don\'t have user yet? Sign up</string>
-    <string name="description">Description</string>
-    <string name="package_location">Package Location</string>
-    <string name="additional_notes">Additional Notes</string>
-    <string name="details">Details:</string>
-    <string name="location">Location</string>
-    <string name="None">None</string>
 
-    <string name="open">Open navigation drawer</string>
-    <string name="close">Close navigation drawer</string>
-    <string name="no_packages_found_nearby">No packages found nearby!</string>
-    <string name="you_have_no_packages">You have no packages!</string>
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="sign_up">Sign up</string>
+    <string name="login_text">Don\'t have a user yet? Sign up</string>
+    <string name="sign_up_text">Already have a user? Login</string>
+
+    <!-- User Info -->
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="home_address">Home Address</string>
+    <string name="password">Password</string>
+
+    <!-- Validation -->
+    <string name="full_name_required">Full name is required</string>
+    <string name="enter_first_last_name">Please enter first and last name</string>
+    <string name="phone_number_required">Phone number is required</string>
+    <string name="invalid_phone_number">Invalid phone number</string>
+    <string name="password_required">Password is required</string>
+
+    <!-- Package General -->
+    <string name="my_packages">My Packages</string>
+    <string name="package_details">Package Details</string>
+    <string name="package_owner">Package Owner</string>
+    <string name="description">Description</string>
+    <string name="additional_notes">Additional Notes</string>
+    <string name="location">Location</string>
+    <string name="package_location">Package Location</string>
+    <string name="details">Details:</string>
+    <string name="none">None</string>
+
+    <!-- Package Actions -->
     <string name="save_package">Save Package</string>
     <string name="edit_package">Edit Package</string>
-    <string name="package_details">Package Details</string>
+    <string name="delete_package">Deleting Package</string>
     <string name="go_back">Go back</string>
-    <string name="my_packages">My Packages</string>
-    <string name="package_owner">package owner</string>
     <string name="call">Call</string>
+
+    <!-- Package Status -->
+    <string name="package_saved">Package saved</string>
+    <string name="package_save_failed">Failed to save package</string>
+    <string name="cannot_delete_package">Couldn\'t delete package</string>
+
+    <!-- Package Validation -->
+    <string name="package_location_invalid">Package location is invalid</string>
+    <string name="package_description_empty">Package description is empty</string>
+    <string name="package_notes_empty">Package additional details are empty</string>
+
+    <!-- Nearby / Tracking -->
+    <string name="no_packages_found_nearby">No packages found nearby!</string>
+    <string name="you_have_no_packages">You have no packages!</string>
+    <string name="monitoring_packages">Monitoring for nearby packages...</string>
+    <string name="packages_found">Packages Found!</string>
+    <string name="packages_nearby">packages nearby!</string>
+    <string name="there_are">There are</string>
+
+    <!-- Notifications / Alerts -->
+    <string name="package_collected_title">Package Collected?</string>
+    <string name="package_collected_message">A user is at your location to collect a package.</string>
+    <string name="confirmed">Confirmed!</string>
+    <string name="cancelled">Cancelled</string>
+
+    <!-- Location -->
+    <string name="location_service">Location Service</string>
+    <string name="cannot_get_location">Could not get a fresh location fix.</string>
+    <string name="location_not_found">No location found with that name</string>
+    <string name="invalid_location">Invalid location</string>
+
+    <!-- System / Permissions -->
+    <string name="required_permissions">The app can\'t work properly without the required permissions</string>
+    <string name="checking_for_messages">Checking for messages</string>
+
+    <!-- Navigation -->
+    <string name="nav_open">Open navigation drawer</string>
+    <string name="nav_close">Close navigation drawer</string>
+
+    <!-- Yes / No -->
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Tracker -->
+    <string name="package_tracker_active">Package Tracker Active</string>
+
 </resources>

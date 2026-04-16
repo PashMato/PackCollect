@@ -98,15 +98,15 @@ public class LoginFragment extends Fragment {
     private String checkValidation(String fullName, String password) {
         // --- Validation ---
         if (fullName.isEmpty()) {
-            return "Full name is required";
+            return getString(R.string.full_name_required);
         }
 
         if (!fullName.contains(" ")) {
-            return "Please enter first and last name";
+            return getString(R.string.enter_first_last_name);
         }
 
         if (password.isEmpty()) {
-            return "Password is required";
+            return getString(R.string.password_required);
         }
 
         return "";

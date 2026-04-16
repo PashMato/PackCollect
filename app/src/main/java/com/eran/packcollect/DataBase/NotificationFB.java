@@ -1,5 +1,7 @@
 package com.eran.packcollect.DataBase;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,10 +20,7 @@ public class NotificationFB {
     private String packageUid;
     private NotificationModes notificationMode;
 
-    public NotificationFB() {
-        // TODO: delete this
-        notificationId = "null";
-    } // fo the firebase
+    public NotificationFB() {} // fo the firebase
     private NotificationFB(String senderUid, String receiverUid, String packageUid, NotificationModes notificationMode) {
         this.senderUid = senderUid;
         this.receiverUid = receiverUid;
@@ -36,7 +35,6 @@ public class NotificationFB {
             return false;
         }
 
-        //TODO: check if the details are actually exists
         NotificationFB notificationFB = new NotificationFB(uid, receiverUid, packageUid, notificationMode);
 
         notificationFB.updateToDataBase();

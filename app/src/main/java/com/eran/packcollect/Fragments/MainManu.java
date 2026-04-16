@@ -34,10 +34,7 @@ public class MainManu {
 
         nav.setNavigationItemSelectedListener(item -> {
 
-            if (item.getItemId() == R.id.nav_profile) {
-
-            }
-            else if (item.getItemId() == R.id.nav_collect && mode != FragmentMode.COLLECT_PACKAGES) {
+            if (item.getItemId() == R.id.nav_collect && mode != FragmentMode.COLLECT_PACKAGES) {
                 navController.navigate(R.id.action_requestsFragments_to_collectPackFragment);
             }
             else if (item.getItemId() == R.id.nav_my_pack && mode != FragmentMode.MY_PACKAGES) {

@@ -38,7 +38,7 @@ public class Package implements Serializable {
     public static Package savePackageForUser(Address packageAddress, String description, String additionalInfo,
                            @NonNull OnSuccessListener onSuccessListener, @NonNull OnFailureListener onFailureListener) {
         Package pack = new Package(packageAddress, description, additionalInfo);
-        //  TODO: add a limit on how many packages you can own
+
         pack.updateToDataBase(onSuccessListener, onFailureListener);
         return pack;
     }

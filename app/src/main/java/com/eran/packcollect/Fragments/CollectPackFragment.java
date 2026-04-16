@@ -135,7 +135,7 @@ public class CollectPackFragment extends Fragment {
             } else {
                 emptyState_LL.setVisibility(View.VISIBLE);
                 loadingBar_PB.setVisibility(View.GONE);
-                Toast.makeText(getContext(), "Could not get a fresh location fix.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.cannot_get_location), Toast.LENGTH_SHORT).show();
             }
         };
 
