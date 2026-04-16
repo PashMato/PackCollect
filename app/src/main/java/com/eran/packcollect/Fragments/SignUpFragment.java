@@ -107,7 +107,7 @@ public class SignUpFragment extends Fragment {
                 mAuth.createUserWithEmailAndPassword( editedFullName + "@gmail.com", password)
                         .addOnCompleteListener(task -> {
                             if (!task.isSuccessful()) {
-                                Toast.makeText(getContext(), getString(R.string.sign_up_failed) + ": " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), getString(R.string.sign_up_text) + ": " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                 Log.e("DataBase", "Signup failed: " + task.getException().getMessage());
                                 return;
                             }

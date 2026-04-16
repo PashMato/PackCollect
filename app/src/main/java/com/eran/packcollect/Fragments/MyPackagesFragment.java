@@ -187,7 +187,7 @@ public class MyPackagesFragment extends Fragment {
                     }
 
                     if (pkg.expiresAt <= timeNow) {
-                        Log.i("Firebase", getString(R.string.deleting_package) + " `" + pkg.additionalNotes + "`");
+                        Log.i("Firebase", getString(R.string.delete_package) + " `" + pkg.additionalNotes + "`");
                         pkgSnapshot.getRef().removeValue();
                         continue;
                     }

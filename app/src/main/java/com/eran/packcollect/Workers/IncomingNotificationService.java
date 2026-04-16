@@ -101,7 +101,7 @@ public class IncomingNotificationService extends Service {
 
         Notification popup = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_package)
-                .setContentTitle(getString(R.string.package_collected))
+                .setContentTitle(getString(R.string.package_collected_title))
                 .setContentText(getString(R.string.package_collected_message))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addAction(android.R.drawable.ic_input_add, getString(R.string.yes), yesPending)

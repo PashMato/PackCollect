@@ -24,8 +24,8 @@ public class MainManu {
                         fragment.requireActivity(),
                         drawer,
                         toolbar,
-                        R.string.open,
-                        R.string.close);
+                        R.string.nav_open,
+                        R.string.nav_close);
 
         drawer.addDrawerListener(toggle);
         toggle.syncState();
