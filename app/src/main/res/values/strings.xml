@@ -89,5 +89,6 @@
     <string name="search">Search</string>
     <string name="search_address">Search address...</string>
     <string name="refresh_packages">Refresh packages</string>
+    <string name="collect">Collect</string>
 
 </resources>

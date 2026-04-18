@@ -35,16 +35,23 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         }
         // deleting the package from the firebase
         if ("ACTION_YES".equals(action) && packId != null) {
-                FirebaseDatabase.getInstance().getReference("packages")
-                        .child(packId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                Toast.makeText(context, getString(context, R.string.confirmed), Toast.LENGTH_SHORT).show();
-                            }
-                        });
+            NotificationActionReceiver.confirmCollection(context, packId, null);
         } else if ("ACTION_NO".equals(action)) {
             // Logic for rejection
             Toast.makeText(context, getString(context, R.string.cancelled), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public static void confirmCollection(Context context, String packId, OnCompleteListener onCompleteListener) {
+        FirebaseDatabase.getInstance().getReference("packages")
+                .child(packId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(context, context.getString(R.string.confirmed), Toast.LENGTH_SHORT).show();
+                        if (onCompleteListener != null) {
+                            onCompleteListener.onComplete(task);
+                        }
+                    }
+                });
     }
 }

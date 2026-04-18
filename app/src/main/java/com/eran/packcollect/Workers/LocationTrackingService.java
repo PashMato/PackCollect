@@ -101,7 +101,7 @@ public class LocationTrackingService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        String text = getString(R.string.there_are) + count + getString(R.string.packages_nearby);
+        String text = getString(R.string.there_are) + " " + count + " " + getString(R.string.packages_nearby);
 
         Notification popup = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_package)

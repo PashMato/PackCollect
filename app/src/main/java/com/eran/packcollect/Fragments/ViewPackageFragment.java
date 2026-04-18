@@ -1,5 +1,6 @@
 package com.eran.packcollect.Fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,6 +21,10 @@ import com.eran.packcollect.DataBase.NotificationFB;
 import com.eran.packcollect.DataBase.NotificationModes;
 import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
+import com.eran.packcollect.Workers.NotificationActionReceiver;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +36,7 @@ public class ViewPackageFragment extends Fragment {
     private FragmentMode fragmentMode;
     private String ownerUid = "";
     private String ownerPhoneNumber = "";
+    private Context context;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,6 +65,8 @@ public class ViewPackageFragment extends Fragment {
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
+        context = view.getContext();
+
         // Initialize Views
         ImageButton backBtn = view.findViewById(R.id.back_button);
         TextView tvOwner = view.findViewById(R.id.display_owner);
@@ -64,7 +74,8 @@ public class ViewPackageFragment extends Fragment {
         TextView tvDescription = view.findViewById(R.id.display_description);
         TextView tvAdditional = view.findViewById(R.id.display_additional);
         FloatingActionButton editFab = view.findViewById(R.id.edit_package_fab);
-        ImageButton dailButton = view.findViewById(R.id.dial_button);
+        MaterialButton dailButton = view.findViewById(R.id.dial_button);
+        MaterialButton collectButton = view.findViewById(R.id.collect_button);
 
         // Populate Data
         if (currentPackage != null) {
@@ -95,13 +106,7 @@ public class ViewPackageFragment extends Fragment {
 
         // Back Button Logic
         backBtn.setOnClickListener(v -> {
-            int action = R.id.action_viewPackageFragment_to_collectPackFragment;
-
-            if (fragmentMode == FragmentMode.MY_PACKAGES) {
-                action = R.id.action_viewPackageFragment_to_requestsFragments;
-            }
-
-            navController.navigate(action);
+            back();
         });
 
         // Edit Button Logic
@@ -132,12 +137,39 @@ public class ViewPackageFragment extends Fragment {
             }
         });
 
+        // Collect Button Logic
+        collectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NotificationActionReceiver.confirmCollection(context, currentPackage.packageId, new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        back();
+                    }
+                });
+            }
+        });
+
         if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getUid().equals(currentPackage.ownerUid)) { // if the user is the owner
             dailButton.setVisibility(View.GONE);
+            if (fragmentMode == FragmentMode.COLLECT_PACKAGES) { // you can collect packages only in collect packages mode
+                collectButton.setVisibility(View.VISIBLE);
+            }
             editFab.setVisibility(View.VISIBLE);
         } else {
             dailButton.setVisibility(View.VISIBLE);
+            collectButton.setVisibility(View.GONE);
             editFab.setVisibility(View.GONE);
         }
+    }
+
+    private void back() {
+        int action = R.id.action_viewPackageFragment_to_collectPackFragment;
+
+        if (fragmentMode == FragmentMode.MY_PACKAGES) {
+            action = R.id.action_viewPackageFragment_to_requestsFragments;
+        }
+
+        navController.navigate(action);
     }
 }
