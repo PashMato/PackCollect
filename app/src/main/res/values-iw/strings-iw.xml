@@ -85,9 +85,5 @@
     <!-- Tracker -->
     <string name="package_tracker_active">Package Tracker Active</string>
     <string name="package_map">Package Map</string>
-    <string name="recenter_location">Recenter location</string>
-    <string name="search">Search</string>
-    <string name="search_address">Search address...</string>
-    <string name="refresh_packages">Refresh packages</string>
 
 </resources>

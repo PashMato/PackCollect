@@ -78,7 +78,7 @@ public class EditPackage extends Fragment {
 
                     @Override
                     public void onNoResult(String query) {
-                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + "'" + query + "'", Toast.LENGTH_LONG).show();
+                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + " '" + query + "' ", Toast.LENGTH_LONG).show();
                         addressLocation = null;
                     }
 

@@ -47,6 +47,7 @@ import java.util.List;
 public class MyPackagesFragment extends Fragment {
     private NavController navController;
     private FloatingActionButton newPackage_FAB;
+    private FloatingActionButton map_FAB;
 
     PackagesAdapter adapter;
     RecyclerView recyclerView;
@@ -135,6 +136,16 @@ public class MyPackagesFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 navController.navigate(R.id.action_requestsFragments_to_newRequestFragment);
+            }
+        });
+
+        map_FAB = view.findViewById(R.id.map_view_fab);
+        map_FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
+                navController.navigate(R.id.action_MyPackagesFragment_to_mapFragment);
             }
         });
 

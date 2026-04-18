@@ -36,6 +36,7 @@ import com.google.android.gms.location.Priority;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class CollectPackFragment extends Fragment {
     RecyclerView recyclerView;
     LinearLayout emptyState_LL;
     ProgressBar loadingBar_PB;
+    FloatingActionButton map_FAB;
 
     Context context;
 
@@ -87,6 +89,16 @@ public class CollectPackFragment extends Fragment {
 
         emptyState_LL = view.findViewById(R.id.emptyStateLayout);
         loadingBar_PB = view.findViewById(R.id.loading_spinner);
+
+        map_FAB = view.findViewById(R.id.map_view_fab);
+        map_FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
+                navController.navigate(R.id.action_collectPackFragment_to_mapFragment);
+            }
+        });
 
         checkLocationPermissionAndFetch();
     }

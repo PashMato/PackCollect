@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.eran.packcollect"
-        minSdk = 36
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -65,4 +65,6 @@ dependencies {
     implementation("androidx.work:work-runtime:2.8.1")
 
     implementation("androidx.work:work-runtime:2.9.0")
+
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 }

@@ -4,9 +4,9 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment2">
     <fragment
-        android:id="@+id/requestsFragments"
+        android:id="@+id/MyPackagesFragment"
         android:name="com.eran.packcollect.Fragments.MyPackagesFragment"
-        android:label="RequestsFragments" >
+        android:label="MyPackagesFragment">
         <action
             android:id="@+id/action_requestsFragments_to_newRequestFragment"
             app:destination="@id/newRequestFragment" />
@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_requestsFragments_to_viewPackageFragment"
             app:destination="@id/viewPackageFragment" />
+        <action
+            android:id="@+id/action_MyPackagesFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
     </fragment>
     <fragment
         android:id="@+id/newRequestFragment"
@@ -26,7 +29,7 @@
         android:label="NewRequestFragment" >
         <action
             android:id="@+id/action_newRequestFragment_to_requestsFragments2"
-            app:destination="@id/requestsFragments" />
+            app:destination="@id/MyPackagesFragment" />
         <action
             android:id="@+id/action_newRequestFragment_to_viewPackageFragment"
             app:destination="@id/viewPackageFragment" />
@@ -37,7 +40,7 @@
         android:label="LoginFragment" >
         <action
             android:id="@+id/action_loginFragment2_to_requestsFragments"
-            app:destination="@id/requestsFragments" />
+            app:destination="@id/MyPackagesFragment" />
         <action
             android:id="@+id/action_loginFragment2_to_signInFragment"
             app:destination="@id/signInFragment" />
@@ -48,7 +51,7 @@
         android:label="SignInFragment" >
         <action
             android:id="@+id/action_signInFragment_to_requestsFragments"
-            app:destination="@id/requestsFragments" />
+            app:destination="@id/MyPackagesFragment" />
         <action
             android:id="@+id/action_signInFragment_to_loginFragment2"
             app:destination="@id/loginFragment2" />
@@ -59,13 +62,16 @@
         android:label="CollectPackFragment" >
         <action
             android:id="@+id/action_collectPackFragment_to_requestsFragments"
-            app:destination="@id/requestsFragments" />
+            app:destination="@id/MyPackagesFragment" />
         <action
             android:id="@+id/action_collectPackFragment_to_viewPackageFragment"
             app:destination="@id/viewPackageFragment" />
         <action
             android:id="@+id/action_collectPackFragment_to_loginFragment2"
             app:destination="@id/loginFragment2" />
+        <action
+            android:id="@+id/action_collectPackFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPackageFragment"
@@ -76,9 +82,20 @@
             app:destination="@id/newRequestFragment" />
         <action
             android:id="@+id/action_viewPackageFragment_to_requestsFragments"
-            app:destination="@id/requestsFragments" />
+            app:destination="@id/MyPackagesFragment" />
         <action
             android:id="@+id/action_viewPackageFragment_to_collectPackFragment"
             app:destination="@id/collectPackFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.eran.packcollect.Fragments.MapFragment"
+        android:label="MapFragment" >
+        <action
+            android:id="@+id/action_mapFragment_to_collectPackFragment"
+            app:destination="@id/collectPackFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_MyPackagesFragment"
+            app:destination="@id/MyPackagesFragment" />
     </fragment>
 </navigation>
