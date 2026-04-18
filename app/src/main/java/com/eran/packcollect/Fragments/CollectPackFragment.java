@@ -25,9 +25,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
-import com.eran.packcollect.Table.OnItemClick;
 import com.eran.packcollect.Table.PackagesAdapter;
 import com.eran.packcollect.Workers.LocationTrackingService;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -39,7 +37,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class CollectPackFragment extends Fragment {
     private NavController navController;
@@ -75,15 +72,12 @@ public class CollectPackFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.collect_rv);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        adapter = new PackagesAdapter(new ArrayList<Package>(), new OnItemClick() {
-            @Override
-            public void OnClick(Package pkg) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("package", pkg); // Passing the data
-                bundle.putSerializable("mode", FragmentMode.COLLECT_PACKAGES);
+        adapter = new PackagesAdapter(new ArrayList<>(), pkg -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("package", pkg); // Passing the data
+            bundle.putSerializable("mode", FragmentMode.COLLECT_PACKAGES);
 
-                navController.navigate(R.id.action_collectPackFragment_to_viewPackageFragment, bundle);
-            }
+            navController.navigate(R.id.action_collectPackFragment_to_viewPackageFragment, bundle);
         });
         recyclerView.setAdapter(adapter);
 
@@ -91,13 +85,10 @@ public class CollectPackFragment extends Fragment {
         loadingBar_PB = view.findViewById(R.id.loading_spinner);
 
         map_FAB = view.findViewById(R.id.map_view_fab);
-        map_FAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
-                navController.navigate(R.id.action_collectPackFragment_to_mapFragment);
-            }
+        map_FAB.setOnClickListener(view1 -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("mode", FragmentMode.COLLECT_PACKAGES);
+            navController.navigate(R.id.action_collectPackFragment_to_mapFragment, bundle);
         });
 
         checkLocationPermissionAndFetch();
@@ -113,7 +104,7 @@ public class CollectPackFragment extends Fragment {
 
 
 
-    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(); // CancellationToken to allow the system to cancel the request if needed
+    private final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(); // CancellationToken to allow the system to cancel the request if needed
 
     private void checkLocationPermissionAndFetch() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -130,19 +121,16 @@ public class CollectPackFragment extends Fragment {
         OnSuccessListener<Location> successListener = location -> {
             if (location != null && adapter != null) {
                 // Now you have a fresh location!
-                LocationTrackingService.checkProximityToPackages(location, new LocationTrackingService.OnPackagesFoundListener() {
-                    @Override
-                    public void onReceived(List<Package> packages) {
-                        if (packages == null || packages.isEmpty()) { // if the list is null update to an empty list
-                            packages = new ArrayList<>();
-                            emptyState_LL.setVisibility(View.VISIBLE);
-                            loadingBar_PB.setVisibility(View.GONE);
-                        }
-
-                        adapter.Packages = packages;
-                        adapter.notifyDataSetChanged();
+                LocationTrackingService.checkProximityToPackages(location, packages -> {
+                    if (packages == null || packages.isEmpty()) { // if the list is null update to an empty list
+                        packages = new ArrayList<>();
+                        emptyState_LL.setVisibility(View.VISIBLE);
                         loadingBar_PB.setVisibility(View.GONE);
                     }
+
+                    adapter.Packages = packages;
+                    adapter.notifyDataSetChanged();
+                    loadingBar_PB.setVisibility(View.GONE);
                 });
             } else {
                 emptyState_LL.setVisibility(View.VISIBLE);
@@ -159,26 +147,9 @@ public class CollectPackFragment extends Fragment {
 
 
         // check if the phone has any previous location
-        fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location == null || (System.currentTimeMillis() - location.getTime() > 1000 * 60))
-                { // if don't have any previous location from the last minute
-                    if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // Request permission if not granted
-                        askPermission();
-                        return;
-                    }
-
-                    fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellationTokenSource.getToken())
-                            .addOnSuccessListener(successListener).addOnFailureListener(failureListener);
-                } else {
-                    successListener.onSuccess(location);
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location == null || (System.currentTimeMillis() - location.getTime() > 1000 * 60))
+            { // if don't have any previous location from the last minute
                 if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // Request permission if not granted
                     askPermission();
@@ -187,18 +158,24 @@ public class CollectPackFragment extends Fragment {
 
                 fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellationTokenSource.getToken())
                         .addOnSuccessListener(successListener).addOnFailureListener(failureListener);
+            } else {
+                successListener.onSuccess(location);
             }
+        }).addOnFailureListener(e -> {
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Request permission if not granted
+                askPermission();
+                return;
+            }
+
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellationTokenSource.getToken())
+                    .addOnSuccessListener(successListener).addOnFailureListener(failureListener);
         });
 
     }
 
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    // Permission granted! You can now send notifications.
-                } else {
-                    // Explain to the user that notifications are disabled.
-                }
             });
     private void askPermission() {
         final String[] permissions = new String[] {

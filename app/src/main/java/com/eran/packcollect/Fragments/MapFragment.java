@@ -1,6 +1,7 @@
 package com.eran.packcollect.Fragments;
 
 import android.content.Context;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -31,14 +32,12 @@ import com.eran.packcollect.Location.SearchLocationCallback;
 import com.eran.packcollect.R;
 import com.eran.packcollect.Workers.LocationTrackingService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import org.osmdroid.api.IMapController;
@@ -52,6 +51,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MapFragment extends Fragment {
 
@@ -59,12 +59,14 @@ public class MapFragment extends Fragment {
 
     private MapView map = null;
     private MyLocationNewOverlay locationOverlay;
-    private List<Marker> packageMarkers = new ArrayList<>();
+    private final List<Marker> packageMarkers = new ArrayList<>();
     private GpsMyLocationProvider provider; // Keep a reference to the provider
 
     private FragmentMode fragmentMode;
 
     private Context context;
+
+    private ImageView refreshFAB;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -132,79 +134,67 @@ public class MapFragment extends Fragment {
         mapController.setCenter(startPoint);
 
         ImageButton back_IB = view.findViewById(R.id.back_button);
-        back_IB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int action = R.id.action_mapFragment_to_collectPackFragment;
+        back_IB.setOnClickListener(view1 -> {
+            int action = R.id.action_mapFragment_to_collectPackFragment;
 
-                if (fragmentMode == FragmentMode.MY_PACKAGES) {
-                    action = R.id.action_mapFragment_to_MyPackagesFragment;
-                }
-
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("mode", fragmentMode);
-
-                navController.navigate(action, bundle);
+            if (fragmentMode == FragmentMode.MY_PACKAGES) {
+                action = R.id.action_mapFragment_to_MyPackagesFragment;
             }
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("mode", fragmentMode);
+
+            navController.navigate(action, bundle);
         });
 
-        ImageView refreshFAB = view.findViewById(R.id.fab_refresh);
-        refreshFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                updatePackages();
-                recenterOnUser();
-            }
-        });
+        refreshFAB = view.findViewById(R.id.fab_refresh);
+        refreshFAB.setOnClickListener(view2 -> updatePackages());
+
+        Drawable drawable = refreshFAB.getDrawable();
+        if (drawable instanceof Animatable) {
+            ((Animatable) drawable).start();
+        }
 
         FloatingActionButton fab_my_location = view.findViewById(R.id.fab_my_location);
-        fab_my_location.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                recenterOnUser();
-            }
-        });
+        fab_my_location.setOnClickListener(view3 -> recenterOnUser());
 
         EditText search_input = view.findViewById(R.id.search_input);
 
         ImageButton search_button = view.findViewById(R.id.search_button);
-        search_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Hide the keyboard
-                InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        search_button.setOnClickListener(view4 -> {
+            // Hide the keyboard
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view4.getWindowToken(), 0);
+            }
+
+            search_input.clearFocus();
+
+            Address.searchAddress(context, new SearchLocationCallback() {
+                @Override
+                public void onSuccess(Address location) {
+                    // Get the controller
+                    IMapController mapController1 = map.getController();
+
+                    // set the zoom level (higher number = closer to the ground)
+                    mapController1.setZoom(15.0);
+
+                    // center the map on a specific point
+                    GeoPoint startPoint1 = new GeoPoint(location.lat, location.lon);
+                    mapController1.setCenter(startPoint1);
                 }
 
-                search_input.clearFocus();
+                @Override
+                public void onNoResult(String query) {
+                    Toast.makeText(context, "Couldn't find location", Toast.LENGTH_SHORT).show();
+                }
 
-                Address.searchAddress(context, new SearchLocationCallback() {
-                    @Override
-                    public void onSuccess(Address location) {
-                        // Get the controller
-                        IMapController mapController = map.getController();
-
-                        // set the zoom level (higher number = closer to the ground)
-                        mapController.setZoom(15.0);
-
-                        // center the map on a specific point
-                        GeoPoint startPoint = new GeoPoint(location.lat, location.lon);
-                        mapController.setCenter(startPoint);
-                    }
-
-                    @Override
-                    public void onNoResult(String query) {
-                        Toast.makeText(context, "Couldn't find location", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(context, "Couldn't find location", Toast.LENGTH_SHORT).show();
-                        Log.e("SEARCH_LOCATION", e.getMessage());
-                    }
-                },  search_input.getText().toString());
-            }
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(context, "Couldn't find location", Toast.LENGTH_SHORT).show();
+                    Log.e("SEARCH_LOCATION", Objects.requireNonNull(e.getMessage()));
+                }
+            },  search_input.getText().toString());
         });
 
 
@@ -243,14 +233,14 @@ public class MapFragment extends Fragment {
         Location userLocation = provider.getLastKnownLocation();
         if (userLocation == null) return;
 
+        Drawable drawable = refreshFAB.getDrawable();
+        if (drawable instanceof Animatable) {
+            ((Animatable) drawable).start();
+        }
+
         if (fragmentMode == FragmentMode.COLLECT_PACKAGES) {
             // Calling your service function
-            LocationTrackingService.checkProximityToPackages(userLocation, new LocationTrackingService.OnPackagesFoundListener() {
-                @Override
-                public void onReceived(List<Package> packages) {
-                    displayPackagesOnMap(packages);
-                }
-            });
+            LocationTrackingService.checkProximityToPackages(userLocation, this::displayPackagesOnMap);
         } else if (fragmentMode == FragmentMode.MY_PACKAGES) {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -291,6 +281,12 @@ public class MapFragment extends Fragment {
     }
 
     private void displayPackagesOnMap(List<Package> packages) {
+        // Stop the Animation
+        Drawable drawable = refreshFAB.getDrawable();
+        if (drawable instanceof Animatable) {
+            ((Animatable) drawable).stop();
+        }
+
         // Clear old markers first so they don't stack
         for (Marker m : packageMarkers) {
             map.getOverlays().remove(m);

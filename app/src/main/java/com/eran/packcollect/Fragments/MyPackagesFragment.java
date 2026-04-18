@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.R;
-import com.eran.packcollect.Table.OnItemClick;
 import com.eran.packcollect.Table.PackagesAdapter;
 import com.eran.packcollect.Workers.IncomingNotificationService;
 import com.eran.packcollect.Workers.LocationTrackingService;
@@ -46,8 +45,6 @@ import java.util.List;
 
 public class MyPackagesFragment extends Fragment {
     private NavController navController;
-    private FloatingActionButton newPackage_FAB;
-    private FloatingActionButton map_FAB;
 
     PackagesAdapter adapter;
     RecyclerView recyclerView;
@@ -117,36 +114,25 @@ public class MyPackagesFragment extends Fragment {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeHandler);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        adapter = new PackagesAdapter(new ArrayList<Package>(), new OnItemClick() {
-            @Override
-            public void OnClick(Package pkg) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("package", pkg); // Passing the data
+        adapter = new PackagesAdapter(new ArrayList<>(), pkg -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("package", pkg); // Passing the data
 
-                navController.navigate(R.id.action_requestsFragments_to_viewPackageFragment, bundle);
-            }
+            navController.navigate(R.id.action_requestsFragments_to_viewPackageFragment, bundle);
         });
 
         recyclerView.setAdapter(adapter);
 
         new MainManu(this, view, context, navController, FragmentMode.MY_PACKAGES);
 
-        newPackage_FAB = view.findViewById(R.id.add_request_fab);
-        newPackage_FAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                navController.navigate(R.id.action_requestsFragments_to_newRequestFragment);
-            }
-        });
+        FloatingActionButton newPackage_FAB = view.findViewById(R.id.add_request_fab);
+        newPackage_FAB.setOnClickListener(view2 -> navController.navigate(R.id.action_requestsFragments_to_newRequestFragment));
 
-        map_FAB = view.findViewById(R.id.map_view_fab);
-        map_FAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
-                navController.navigate(R.id.action_MyPackagesFragment_to_mapFragment);
-            }
+        FloatingActionButton map_FAB = view.findViewById(R.id.map_view_fab);
+        map_FAB.setOnClickListener(view1 -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
+            navController.navigate(R.id.action_MyPackagesFragment_to_mapFragment, bundle);
         });
 
         askPermission(new PermissionCallback() {
