@@ -115,25 +115,22 @@ public class ViewPackageFragment extends Fragment {
             bundle.putSerializable("package", currentPackage); // Passing the data
             bundle.putSerializable("mode", fragmentMode); // passing the mode
 
-            navController.navigate(R.id.action_viewPackageFragment_to_newRequestFragment, bundle);
+            navController.navigate(R.id.action_viewPackageFragment_to_editPackage, bundle);
         });
 
         // Dial Button Logic
-        dailButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!NotificationFB.sendNotification(ownerUid, currentPackage.packageId, NotificationModes.APPROVE_PICK_UP)) {
-                    // if we sent invalid notification
-                    return;
-                }
+        dailButton.setOnClickListener(view1 -> {
+            if (!NotificationFB.sendNotification(ownerUid, currentPackage.packageId, NotificationModes.APPROVE_PICK_UP)) {
+                // if we sent invalid notification
+                return;
+            }
 
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:" + ownerPhoneNumber));
+            Intent intent = new Intent(Intent.ACTION_DIAL);
+            intent.setData(Uri.parse("tel:" + ownerPhoneNumber));
 
-                // Standard check to make sure the user has a phone app installed
-                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-                    startActivity(intent);
-                }
+            // Standard check to make sure the user has a phone app installed
+            if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                startActivity(intent);
             }
         });
 
@@ -164,12 +161,27 @@ public class ViewPackageFragment extends Fragment {
     }
 
     private void back() {
-        int action = R.id.action_viewPackageFragment_to_collectPackFragment;
+        int action;
+        Bundle bundle = new Bundle();
 
-        if (fragmentMode == FragmentMode.MY_PACKAGES) {
-            action = R.id.action_viewPackageFragment_to_requestsFragments;
+        switch (fragmentMode) {
+            case COLLECT_PACKAGES:
+                action = R.id.action_viewPackageFragment_to_collectPackFragment;
+                break;
+            case MAP_FROM_MY_PACKAGES:
+                action = R.id.action_viewPackageFragment_to_mapFragment;
+                bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
+                break;
+            case MAP_FROM_COLLECT_PACKAGES:
+                action = R.id.action_viewPackageFragment_to_mapFragment;
+                bundle.putSerializable("mode", FragmentMode.COLLECT_PACKAGES);
+                break;
+            case MY_PACKAGES:
+            default:
+                action = R.id.action_viewPackageFragment_to_myPackagesFragment;
+                break;
         }
 
-        navController.navigate(action);
+        navController.navigate(action, bundle);
     }
 }

@@ -59,7 +59,8 @@ public class MapFragment extends Fragment {
 
     private MapView map = null;
     private MyLocationNewOverlay locationOverlay;
-    private final List<Marker> packageMarkers = new ArrayList<>();
+    private final List<Marker> packageMyPackagesMarkers = new ArrayList<>();
+    private final List<Marker> packageCollectMarkers = new ArrayList<>();
     private GpsMyLocationProvider provider; // Keep a reference to the provider
 
     private FragmentMode fragmentMode;
@@ -67,6 +68,9 @@ public class MapFragment extends Fragment {
     private Context context;
 
     private ImageView refreshFAB;
+
+    private List<Package> myPackages = null;
+    private List<Package> collectPackages = null;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -238,82 +242,142 @@ public class MapFragment extends Fragment {
             ((Animatable) drawable).start();
         }
 
-        if (fragmentMode == FragmentMode.COLLECT_PACKAGES) {
-            // Calling your service function
-            LocationTrackingService.checkProximityToPackages(userLocation, this::displayPackagesOnMap);
-        } else if (fragmentMode == FragmentMode.MY_PACKAGES) {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-            if (user == null) {
-                return;
-            }
-
-            String ui = user.getUid();
-            if (ui.isBlank()) {
-                return;
-            }
-
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("packages")
-                    .orderByChild("ownerUid").equalTo(user.getUid()).getRef();
-
-            ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    List<Package> userPackages = new ArrayList<>();
-
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Package pkg = snapshot.getValue(Package.class);
-                        if (pkg != null) {
-                            userPackages.add(pkg);
-                        }
-                    }
-
-                    // Now you can send this list to your RecyclerView adapter or Map
-                    displayPackagesOnMap(userPackages);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e("FIREBASE_ERROR", "Query failed to load packages to map: " + databaseError.getMessage());
-                }
-            });
+        if (user == null) {
+            return;
         }
+
+        String ui = user.getUid();
+        if (ui.isBlank()) {
+            return;
+        }
+
+        myPackages = null;
+        collectPackages = null;
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("packages")
+                .orderByChild("ownerUid").equalTo(user.getUid()).getRef();
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Package> userPackages = new ArrayList<>();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Package pkg = snapshot.getValue(Package.class);
+                    if (pkg != null) {
+                        userPackages.add(pkg);
+                    }
+                }
+
+                // Now you can send this list to your RecyclerView adapter or Map
+                myPackages = userPackages;
+                displayPackagesOnMap();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("FIREBASE_ERROR", "Query failed to load packages to map: " + databaseError.getMessage());
+            }
+        });
+
+        LocationTrackingService.checkProximityToPackages(userLocation, packages -> {
+            collectPackages = packages;
+            displayPackagesOnMap();
+        });
     }
 
-    private void displayPackagesOnMap(List<Package> packages) {
-        // Stop the Animation
-        Drawable drawable = refreshFAB.getDrawable();
-        if (drawable instanceof Animatable) {
-            ((Animatable) drawable).stop();
+    private void displayPackagesOnMap() {
+        if (myPackages == null && collectPackages == null) {
+            return;
         }
 
-        // Clear old markers first so they don't stack
-        for (Marker m : packageMarkers) {
-            map.getOverlays().remove(m);
+        if (myPackages != null && collectPackages != null) {
+            // Stop the Animation only if both of the calls are done
+            Drawable drawable = refreshFAB.getDrawable();
+            if (drawable instanceof Animatable) {
+                ((Animatable) drawable).stop();
+            }
         }
-        packageMarkers.clear();
+
+        removeMarkers();
 
         // Add new markers for found packages
-        Drawable icon = ContextCompat.getDrawable(context, R.drawable.map_pin);
-        Drawable image = ContextCompat.getDrawable(context, R.drawable.ic_package);
+        Drawable icon_red = ContextCompat.getDrawable(context, R.drawable.map_pin_red);
+        Drawable icon_green = ContextCompat.getDrawable(context, R.drawable.map_pin_green);
 
-        for (Package pkg : packages) {
-            if (pkg == null || pkg.packageAddress == null) {
+        PackageInfoWindow sharedInfoWindow = new PackageInfoWindow(
+                R.layout.custom_info_window,
+                map,
+                navController,
+                fragmentMode
+        );
+
+        if (myPackages != null && collectPackages != null && !myPackages.isEmpty()) {
+            String ownerUid = myPackages.get(0).ownerUid;
+
+            for (Package collectPkg : collectPackages) {
+                if (!Objects.equals(collectPkg.ownerUid, ownerUid)) {
+                    continue;
+                }
+
+                myPackages.remove(collectPkg);
+            }
+        }
+
+        // if it's null the function got a built it null check
+        createMarkers(myPackages, packageMyPackagesMarkers, sharedInfoWindow, icon_red);
+        createMarkers(collectPackages, packageCollectMarkers, sharedInfoWindow, icon_green);
+
+        map.invalidate(); // Refresh the map
+    }
+
+    private void createMarkers(List<Package> toDraw, List<Marker> markers,
+                               PackageInfoWindow sharedInfoWindow, Drawable icon) {
+        if (toDraw == null) {
+            return;
+        }
+
+        for (Package pkg : toDraw) {
+            if (pkg == null || pkg.packageAddress == null || map == null) {
                 continue;
             }
 
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(pkg.packageAddress.lat, pkg.packageAddress.lon));
             marker.setIcon(icon);
-            marker.setImage(image);
+
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setTitle(pkg.description);
-            marker.setSnippet(pkg.additionalNotes);
+            marker.setInfoWindowAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_TOP);
+
+            // attach your data directly to the marker
+            marker.setRelatedObject(pkg);
+
+            // give it the shared InfoWindow
+            marker.setInfoWindow(sharedInfoWindow);
+
             map.getOverlays().add(marker);
-            packageMarkers.add(marker);
+            markers.add(marker);
+        }
+    }
+
+    private void removeMarkers() {
+        // Clear old markers first so they don't stack
+        if (myPackages != null) {
+            for (Marker m : packageMyPackagesMarkers) {
+                map.getOverlays().remove(m);
+            }
+            packageMyPackagesMarkers.clear();
         }
 
-        map.invalidate(); // Refresh the map
+        // Clear old markers first so they don't stack
+        if (collectPackages != null) {
+            for (Marker m : packageCollectMarkers) {
+                map.getOverlays().remove(m);
+            }
+            packageCollectMarkers.clear();
+        }
     }
 
     @Override

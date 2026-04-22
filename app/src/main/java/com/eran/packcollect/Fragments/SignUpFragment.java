@@ -1,10 +1,16 @@
 package com.eran.packcollect.Fragments;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,7 +36,8 @@ import com.google.firebase.database.FirebaseDatabase;
 public class SignUpFragment extends Fragment {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
-    private Button signIn_BT;
+    private Context context;
+    private Button signUp_BT;
     private TextView login_TV;
 
 
@@ -53,16 +60,88 @@ public class SignUpFragment extends Fragment {
 
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
-
+        context = view.getContext();
 
         fullName_ET = view.findViewById(R.id.user_name_et);
         password_ET = view.findViewById(R.id.password_et);
         phoneNumber_ET = view.findViewById(R.id.phone_et);
         homeAddress_ET = view.findViewById(R.id.address_et);
+
+
+        signUp_BT = view.findViewById(R.id.sign_in_bt);
+        login_TV = view.findViewById(R.id.login_text);
+
+
+        fullName_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                signUp_BT.setEnabled(isEnabled());
+            }
+        });
+        fullName_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) { // exit if gaining focus
+                    return;
+                }
+
+                String result = fullName_ET.getText().toString();
+
+                if (result.isBlank()) {
+                    signUp_BT.setEnabled(false);
+                    Toast.makeText(view.getContext(), getString(R.string.full_name_required), Toast.LENGTH_LONG).show();
+                    // Do something like enable a button or show an error
+                } else if (!result.contains(" ")) {
+                    Toast.makeText(view.getContext(), getString(R.string.enter_first_last_name), Toast.LENGTH_LONG).show();
+                } else {
+                    signUp_BT.setEnabled(isEnabled());
+                }
+            }
+        });
+
+        password_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                signUp_BT.setEnabled(isEnabled());
+            }
+        });
+        password_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) { // exit if gaining focus
+                    return;
+                }
+
+                String result = password_ET.getText().toString();
+
+                if (result.length() < 6) {
+                    signUp_BT.setEnabled(false);
+                    Toast.makeText(view.getContext(), "Password has to be at least 6 characters long", Toast.LENGTH_LONG).show();
+                    // Do something like enable a button or show an error
+                } else {
+                    signUp_BT.setEnabled(isEnabled());
+                }
+            }
+        });
+
         homeAddress_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
+                signUp_BT.setEnabled(false);
                 if (hasFocus) { // exit the function if the focus "begins"
+                    addressLocation = null;
                     return;
                 }
 
@@ -71,12 +150,14 @@ public class SignUpFragment extends Fragment {
                     public void onSuccess(Address location) {
                         Toast.makeText(view.getContext(), location.address, Toast.LENGTH_SHORT).show();
                         addressLocation = location;
+                        signUp_BT.setEnabled(isEnabled());
                     }
 
                     @Override
                     public void onNoResult(String query) {
                         Toast.makeText(view.getContext(), getString(R.string.location_not_found) + " '" + query + "'", Toast.LENGTH_LONG).show();
                         addressLocation = null;
+                        signUp_BT.setEnabled(false);
                     }
 
                     @Override
@@ -88,8 +169,37 @@ public class SignUpFragment extends Fragment {
             }
         });
 
-        signIn_BT = view.findViewById(R.id.sign_in_bt);
-        signIn_BT.setOnClickListener(new View.OnClickListener() {
+        phoneNumber_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable editable) {
+                signUp_BT.setEnabled(isEnabled());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+        });
+        phoneNumber_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {return; }
+
+                if (phoneNumber_ET.getText().toString().isBlank()) {
+                    Toast.makeText(context, getString(R.string.phone_number_required), Toast.LENGTH_LONG).show();
+                    signUp_BT.setEnabled(false);
+                } else if (!phoneNumber_ET.getText().toString().matches("^\\+?\\d{9,15}$")) {
+                    Toast.makeText(context, getString(R.string.invalid_phone_number), Toast.LENGTH_LONG).show();
+                    signUp_BT.setEnabled(false);
+                } else {
+                    signUp_BT.setEnabled(isEnabled());
+                }
+            }
+        });
+        phoneNumber_ET.setOnEditorActionListener(closeKeyboard);
+
+        signUp_BT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String fullName = fullName_ET.getText().toString().trim();
@@ -124,7 +234,7 @@ public class SignUpFragment extends Fragment {
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         Log.d("DataBase", "User Created!");
-                                        navController.navigate(R.id.action_signInFragment_to_requestsFragments);
+                                        navController.navigate(R.id.action_signUpFragment_to_myPackagesFragment);
                                     } else {
                                         Log.e("DataBase", "DB error: " + task.getException().getMessage());
                                     }
@@ -134,17 +244,23 @@ public class SignUpFragment extends Fragment {
             }
         });
 
-        login_TV = view.findViewById(R.id.login_text);
         login_TV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                navController.navigate(R.id.action_signInFragment_to_loginFragment2);
+                navController.navigate(R.id.action_signUpFragment_to_loginFragment);
             }
         });
 
+        signUp_BT.setEnabled(false);
     }
     
-    
+    private boolean isEnabled() {
+        return !fullName_ET.getText().isEmpty() &&
+               !password_ET.getText().toString().isBlank() && password_ET.getText().length() >= 6 &&
+                addressLocation != null &&
+               !phoneNumber_ET.getText().toString().isBlank() && phoneNumber_ET.getText().length() >= 10 &&
+                phoneNumber_ET.getText().toString().matches("^\\+?\\d{9,15}$");
+    }
     private String checkValidation(String fullName, String password, String phoneNumber) {
         // --- Validation ---
         if (fullName.isEmpty()) {
@@ -164,7 +280,7 @@ public class SignUpFragment extends Fragment {
         }
 
         // Basic phone check (digits only, 9–15 digits)
-        if (!phoneNumber.matches("\\d{9,15}")) {
+        if (!phoneNumber.matches("^\\+?\\d{9,15}$")) {
             return getString(R.string.invalid_phone_number);
         }
 
@@ -175,4 +291,21 @@ public class SignUpFragment extends Fragment {
         
         return "";
     }
+
+    TextView.OnEditorActionListener closeKeyboard = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                // 1. Hide the keyboard
+                InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
+
+                // Clear focus so the cursor disappears
+                phoneNumber_ET.clearFocus();
+                return true;
+            }
+
+            return false;
+        }
+    };
 }

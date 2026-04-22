@@ -20,7 +20,9 @@
             android:layout_width="200dp"
             android:layout_height="50dp"
             android:hint="@string/full_name"
-            android:gravity="center_horizontal"/>
+            android:gravity="center_horizontal"
+            android:inputType="text"
+            android:imeOptions="actionNext"/>
 
         <Space
             android:layout_width="match_parent"
@@ -32,7 +34,9 @@
             android:layout_height="50dp"
             android:hint="@string/password"
             android:gravity="center_horizontal"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp"
+            android:inputType="text"
+            android:imeOptions="actionNext"/>
 
         <Space
             android:layout_width="match_parent"
@@ -45,6 +49,7 @@
             android:layout_height="50dp"
             android:hint="@string/home_address"
             android:inputType="textPostalAddress"
+            android:imeOptions="actionNext"
             android:gravity="center_horizontal"
             android:layout_marginTop="12dp"/>
 
@@ -59,7 +64,8 @@
             android:hint="@string/phone_number"
             android:inputType="phone"
             android:gravity="center_horizontal"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp"
+            android:imeOptions="actionDone"/>
 
         <Space
             android:layout_width="match_parent"
@@ -70,7 +76,7 @@
             android:layout_height="50dp"
             android:text="@string/sign_up"
             android:id="@+id/sign_in_bt"
-            />
+            android:enabled="false"/>
 
         <Space
             android:layout_width="match_parent"

@@ -35,19 +35,19 @@ public class MainManu {
         nav.setNavigationItemSelectedListener(item -> {
 
             if (item.getItemId() == R.id.nav_collect && mode != FragmentMode.COLLECT_PACKAGES) {
-                navController.navigate(R.id.action_requestsFragments_to_collectPackFragment);
+                navController.navigate(R.id.action_myPackagesFragments_to_collectPackFragment);
             }
             else if (item.getItemId() == R.id.nav_my_pack && mode != FragmentMode.MY_PACKAGES) {
-                navController.navigate(R.id.action_collectPackFragment_to_requestsFragments);
+                navController.navigate(R.id.action_collectPackFragment_to_myPackagesFragment);
             }
             else if (item.getItemId() == R.id.nav_logout) {
                 PackageAlertReceiver.cancelAllNotifications(context); // Cancel all of the user's notifications
 
                 FirebaseAuth.getInstance().signOut();
                 if (mode == FragmentMode.MY_PACKAGES) {
-                    navController.navigate(R.id.action_requestsFragments_to_loginFragment2);
+                    navController.navigate(R.id.action_myPackagesFragment_to_loginFragment);
                 } else {
-                    navController.navigate(R.id.action_collectPackFragment_to_loginFragment2);
+                    navController.navigate(R.id.action_collectPackFragment_to_loginFragment);
                 }
             }
 

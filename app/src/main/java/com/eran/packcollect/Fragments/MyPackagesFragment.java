@@ -118,7 +118,7 @@ public class MyPackagesFragment extends Fragment {
             Bundle bundle = new Bundle();
             bundle.putSerializable("package", pkg); // Passing the data
 
-            navController.navigate(R.id.action_requestsFragments_to_viewPackageFragment, bundle);
+            navController.navigate(R.id.action_myPackagesFragments_to_viewPackageFragment, bundle);
         });
 
         recyclerView.setAdapter(adapter);
@@ -126,13 +126,13 @@ public class MyPackagesFragment extends Fragment {
         new MainManu(this, view, context, navController, FragmentMode.MY_PACKAGES);
 
         FloatingActionButton newPackage_FAB = view.findViewById(R.id.add_request_fab);
-        newPackage_FAB.setOnClickListener(view2 -> navController.navigate(R.id.action_requestsFragments_to_newRequestFragment));
+        newPackage_FAB.setOnClickListener(view2 -> navController.navigate(R.id.action_myPackages_to_editPackage));
 
         FloatingActionButton map_FAB = view.findViewById(R.id.map_view_fab);
         map_FAB.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
-            navController.navigate(R.id.action_MyPackagesFragment_to_mapFragment, bundle);
+            navController.navigate(R.id.action_myPackagesFragment_to_mapFragment, bundle);
         });
 
         askPermission(new PermissionCallback() {

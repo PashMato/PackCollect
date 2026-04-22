@@ -1,6 +1,8 @@
 package com.eran.packcollect.Fragments;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,37 +64,56 @@ public class EditPackage extends Fragment {
 
 
         address_ET = view.findViewById(R.id.package_location_et);
-        address_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                if (hasFocus) { // exit the function if the focus "begins"
-                    return;
-                }
-
-                Address.searchAddress(view.getContext(), new SearchLocationCallback() {
-                    @Override
-                    public void onSuccess(Address location) {
-                        Toast.makeText(view.getContext(), location.address, Toast.LENGTH_SHORT).show();
-                        addressLocation = location;
-                    }
-
-                    @Override
-                    public void onNoResult(String query) {
-                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + " '" + query + "' ", Toast.LENGTH_LONG).show();
-                        addressLocation = null;
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e("OSM", e.getMessage());
-                        addressLocation = null;
-                    }
-                }, String.valueOf(address_ET.getText()));
-            }
-        });
-
         description_ET = view.findViewById(R.id.package_description_et);
         additionalNotes_ET = view.findViewById(R.id.additional_details_et);
+        save_BT = view.findViewById(R.id.create_request_bt);
+        back_IB = view.findViewById(R.id.back_button);
+
+        address_ET.setOnFocusChangeListener((view1, hasFocus) -> {
+            save_BT.setEnabled(false);
+
+            if (hasFocus) { // exit the function if the focus "begins"
+                addressLocation = null;
+                return;
+            }
+
+            Address.searchAddress(view1.getContext(), new SearchLocationCallback() {
+                @Override
+                public void onSuccess(Address location) {
+                    Toast.makeText(view1.getContext(), location.address, Toast.LENGTH_SHORT).show();
+                    save_BT.setEnabled(!description_ET.getText().isEmpty());
+                    addressLocation = location;
+                }
+
+                @Override
+                public void onNoResult(String query) {
+                    Toast.makeText(view1.getContext(), getString(R.string.location_not_found) + " '" + query + "' ", Toast.LENGTH_LONG).show();
+                    save_BT.setEnabled(true);
+                    addressLocation = null;
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e("OSM", e.getMessage());
+                    addressLocation = null;
+                }
+            }, String.valueOf(address_ET.getText()));
+        });
+
+        description_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = s.toString();
+
+                save_BT.setEnabled(addressLocation != null && !result.isBlank());
+            }
+        });
 
         if (aPackage != null) { // update the fields from the exiting package data
             addressLocation = aPackage.packageAddress;
@@ -101,66 +122,47 @@ public class EditPackage extends Fragment {
             additionalNotes_ET.setText(aPackage.additionalNotes);
         }
 
-        save_BT = view.findViewById(R.id.create_request_bt);
-        save_BT.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String packDescription = description_ET.getText().toString().trim();
-                String packAdditionalNotes = additionalNotes_ET.getText().toString().trim();
+        save_BT.setOnClickListener(view2 -> {
+            String packDescription = description_ET.getText().toString().trim();
+            String packAdditionalNotes = additionalNotes_ET.getText().toString().trim();
 
-                String validation = checkValidation(packDescription, packAdditionalNotes);
+            String validation = checkValidation(packDescription);
 
-                OnSuccessListener onSuccessListener = new OnSuccessListener() {
-                    @Override
-                    public void onSuccess(Object o) {
-                        int action = R.id.action_newRequestFragment_to_viewPackageFragment;
+            OnSuccessListener onSuccessListener = o -> {
+                exitToDestination();
+                Toast.makeText(view2.getContext(), getString(R.string.package_saved), Toast.LENGTH_SHORT).show();
+            };
 
-                        if (fragmentMode == FragmentMode.MY_PACKAGES && aPackage == null) {
-                            action = R.id.action_newRequestFragment_to_requestsFragments2;
-                        }
+            OnFailureListener onFailureListener = e -> {
+                Toast.makeText(view2.getContext(), getString(R.string.package_save_failed), Toast.LENGTH_SHORT).show();
+                Log.e("DATABASE", "Package write failed: ", e);
+            };
 
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("package", aPackage);
-                        bundle.putSerializable("mode", fragmentMode);
+            if (!validation.isBlank()) {
+                Toast.makeText(view2.getContext(), validation, Toast.LENGTH_LONG).show();
+                save_BT.setEnabled(false);
+                return;
+            }
 
-                        navController.navigate(action, bundle);
-                        Toast.makeText(view.getContext(), getString(R.string.package_saved), Toast.LENGTH_SHORT).show();
-                    }
-                };
+            if (aPackage != null) { // Update the exiting package
+                aPackage.packageAddress = addressLocation;
+                aPackage.description = packDescription;
+                aPackage.additionalNotes = packAdditionalNotes;
 
-                OnFailureListener onFailureListener = new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(view.getContext(), getString(R.string.package_save_failed), Toast.LENGTH_SHORT).show();
-                        Log.e("DATABASE", "Package write failed: ", e);
-                    }
-                };
-
-                if (!validation.isEmpty()) {
-                    Toast.makeText(view.getContext(), validation, Toast.LENGTH_LONG);
-                }
-
-                if (aPackage != null) { // Update the exiting package
-                    aPackage.packageAddress = addressLocation;
-                    aPackage.description = packDescription;
-                    aPackage.additionalNotes = packAdditionalNotes;
-
-                    aPackage.updateToDataBase(onSuccessListener, onFailureListener);
-                } else {
-                    Package.savePackageForUser(addressLocation, packDescription, packAdditionalNotes,
-                            onSuccessListener, onFailureListener);
-                }
+                aPackage.updateToDataBase(onSuccessListener, onFailureListener);
+            } else {
+                Package.savePackageForUser(addressLocation, packDescription, packAdditionalNotes,
+                        onSuccessListener, onFailureListener);
             }
         });
 
-        back_IB = view.findViewById(R.id.back_button);
         back_IB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int action = R.id.action_newRequestFragment_to_viewPackageFragment;
+                int action = R.id.action_editPackageFragment_to_viewPackageFragment;
 
                 if (fragmentMode == FragmentMode.MY_PACKAGES && aPackage == null) {
-                    action = R.id.action_newRequestFragment_to_requestsFragments2;
+                    action = R.id.action_editPackageFragment_to_myPackagesFragment;
                 }
 
                 Bundle bundle = new Bundle();
@@ -172,7 +174,7 @@ public class EditPackage extends Fragment {
         });
     }
 
-    private String checkValidation(String packDescription, String packAdditionalDetails) {
+    private String checkValidation(String packDescription) {
        if (addressLocation == null) {
            return getString(R.string.package_location_invalid);
        }
@@ -181,10 +183,18 @@ public class EditPackage extends Fragment {
             return getString(R.string.package_description_empty);
         }
 
-        if (packAdditionalDetails.isBlank()) {
-            return getString(R.string.package_notes_empty);
+        return "";
+    }
+
+    private void exitToDestination() {
+        int action = R.id.action_editPackageFragment_to_viewPackageFragment;
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("mode", fragmentMode);
+
+        if (fragmentMode == FragmentMode.MY_PACKAGES) {
+            action = R.id.action_editPackageFragment_to_myPackagesFragment;
         }
 
-        return "";
+        navController.navigate(action, bundle);
     }
 }

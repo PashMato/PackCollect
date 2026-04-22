@@ -108,6 +108,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/create_request_bt"
+                android:enabled="false"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@string/save_package"

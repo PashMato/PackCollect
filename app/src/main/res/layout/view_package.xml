@@ -41,6 +41,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header_layout">
 
@@ -48,14 +50,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="16dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -63,51 +67,92 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.6"
-                        android:letterSpacing="0.05"
-                        android:text="@string/package_owner"
-                        android:textAllCaps="true"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/display_owner"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="17sp"
-                        tools:text="John Doe" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_person"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.7"
+                                android:letterSpacing="0.05"
+                                android:text="@string/package_owner"
+                                android:textAllCaps="true"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/display_owner"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                tools:text="John Doe" />
+                        </LinearLayout>
+                    </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="16dp"
+                        android:layout_marginStart="40dp"
                         android:alpha="0.1"
                         android:background="?attr/colorOnSurface" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.6"
-                        android:letterSpacing="0.05"
-                        android:text="@string/location"
-                        android:textAllCaps="true"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/display_location"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="17sp"
-                        tools:text="123 Maple St, Tel Aviv" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_location_on"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="16dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.7"
+                                android:letterSpacing="0.05"
+                                android:text="@string/location"
+                                android:textAllCaps="true"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/display_location"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="16sp"
+                                tools:text="123 Maple St, Tel Aviv" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -117,7 +162,8 @@
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -125,77 +171,125 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:alpha="0.6"
-                        android:text="@string/description"
-                        android:textAllCaps="true"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/display_description"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="16sp"
-                        tools:text="Large brown box, fragile." />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:alpha="0.6"
-                        android:text="@string/additional_notes"
-                        android:textAllCaps="true"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_package"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="2dp"/>
 
-                    <TextView
-                        android:id="@+id/display_additional"
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.7"
+                                android:text="@string/description"
+                                android:textAllCaps="true"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/display_description"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="16sp"
+                                tools:text="Large brown box, fragile." />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="16dp"
+                        android:layout_marginStart="40dp"
+                        android:alpha="0.1"
+                        android:background="?attr/colorOnSurface" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="15sp"
-                        tools:text="Leave by the gate." />
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_notes"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginTop="2dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:alpha="0.7"
+                                android:text="@string/additional_notes"
+                                android:textAllCaps="true"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/display_additional"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="?attr/colorOnSurface"
+                                android:textSize="15sp"
+                                tools:text="Leave by the gate." />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_marginTop="24dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/dial_button"
                     style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
+                    android:layout_width="240dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
                     android:text="@string/call"
-                    app:icon="@drawable/ic_call" />
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_call"
+                    app:iconGravity="textStart"
+                    tools:visibility="visible" />
+
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/collect_button"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="240dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
                     android:text="@string/collect"
                     android:visibility="gone"
+                    app:cornerRadius="12dp"
                     app:backgroundTint="#4CAF50"
                     app:icon="@drawable/ic_pack_collected"
-                    tools:visibility="visible" />
+                    app:iconGravity="textStart"
+                    tools:visibility="invisible" />
 
-            </LinearLayout>
-
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="100dp" />
+            </FrameLayout>
 
         </LinearLayout>
     </ScrollView>
@@ -205,7 +299,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="75dp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_edit"
