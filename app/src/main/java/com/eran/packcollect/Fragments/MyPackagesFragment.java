@@ -132,7 +132,8 @@ public class MyPackagesFragment extends Fragment {
         map_FAB.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("mode", FragmentMode.MY_PACKAGES);
-            navController.navigate(R.id.action_myPackagesFragment_to_mapFragment, bundle);
+//            navController.navigate(R.id.action_myPackagesFragment_to_mapFragment, bundle);
+            navController.navigate(R.id.action_MyPackagesFragment_to_viewProfileFragment);
         });
 
         askPermission(new PermissionCallback() {

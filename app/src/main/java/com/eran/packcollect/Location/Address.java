@@ -74,28 +74,32 @@ public class Address implements Serializable {
             JSONObject addr = item.getJSONObject("address");
 
             // house_number + road
-            if (addr.has("house_number")) shortName.append(addr.getString("house_number")).append(" ");
-            if (addr.has("road")) shortName.append(addr.getString("road"));
-
-            // road
-            String road = addr.has("road") ? addr.getString("road") : "";
-            if (!shortName.isEmpty()) shortName.append(", ");
-            shortName.append(road);
+            if (addr.has("house_number")) {
+                shortName.append(addr.getString("house_number"));
+            }
+            if (addr.has("road")) {
+                if (!shortName.isEmpty()) {
+                    shortName.append(" ");
+                }
+                shortName.append(addr.getString("road"));
+            }
 
             // locality
             String locality = addr.has("locality") ? addr.getString("locality") : "";
-            if (!shortName.isEmpty()) shortName.append(", ");
+            if (!shortName.isEmpty() && !locality.isBlank()) shortName.append(", ");
             shortName.append(locality);
 
             // city or town or village
             String city = addr.has("village") ? addr.getString("village") :
                     addr.has("town") ? addr.getString("town") :
                             addr.has("city") ? addr.getString("city") : "";
-            if (!shortName.isEmpty()) shortName.append(", ");
+            if (!shortName.isEmpty() && !city.isBlank()) shortName.append(", ");
             shortName.append(city);
 
             // country
-            if (addr.has("country")) shortName.append(", ").append(addr.getString("country"));
+            String country = addr.has("country") ? addr.getString("country") : "";
+            if (!shortName.isEmpty() && !country.isBlank()) shortName.append(", ");
+            shortName.append(country);
 
         } catch (JSONException e) {
             Log.e("LocationMissingAddress", e.getMessage());

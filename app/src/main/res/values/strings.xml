@@ -90,5 +90,8 @@
     <string name="search_address">Search address...</string>
     <string name="refresh_packages">Refresh packages</string>
     <string name="collect">Collect</string>
+    <string name="user_details">User Details</string>
+    <string name="collect_pack">Collect Pack</string>
+    <string name="update_details">Update Details</string>
 
 </resources>

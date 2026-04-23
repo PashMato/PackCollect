@@ -16,8 +16,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class MainManu {
     public MainManu(Fragment fragment, View view, Context context, NavController navController, FragmentMode mode) {
-        DrawerLayout drawer = view.findViewById(mode == FragmentMode.MY_PACKAGES ? R.id.my_packages : R.id.drawer_layout_collect);
-        MaterialToolbar toolbar = view.findViewById(mode == FragmentMode.MY_PACKAGES ? R.id.top_toolbar : R.id.top_toolbar1);
+        DrawerLayout drawer = view.findViewById(mode == FragmentMode.MY_PACKAGES ? R.id.my_packages :
+                (mode == FragmentMode.COLLECT_PACKAGES ? R.id.drawer_layout_collect : R.id.drawer_layout_profile));
+        MaterialToolbar toolbar = view.findViewById(R.id.top_toolbar);
 
         ActionBarDrawerToggle toggle =
                 new ActionBarDrawerToggle(

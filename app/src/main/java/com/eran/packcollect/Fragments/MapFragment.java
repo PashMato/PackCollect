@@ -52,6 +52,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class MapFragment extends Fragment {
 
@@ -344,8 +345,16 @@ public class MapFragment extends Fragment {
                 continue;
             }
 
+            // Define the "Jitter" amount (approx 3-9 meters)
+            double jitter = 0.00009;
+
+            // Add a random nudge between -jitter and +jitter
+            Random random = new Random(pkg.packageId.hashCode());
+            double lat = pkg.packageAddress.lat + (random.nextDouble() * 2 - 1) * jitter;
+            double lon = pkg.packageAddress.lon + (random.nextDouble() * 2 - 1) * jitter;
+
             Marker marker = new Marker(map);
-            marker.setPosition(new GeoPoint(pkg.packageAddress.lat, pkg.packageAddress.lon));
+            marker.setPosition(new GeoPoint(lat, lon));
             marker.setIcon(icon);
 
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);

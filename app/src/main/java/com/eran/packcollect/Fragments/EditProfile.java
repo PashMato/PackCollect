@@ -19,40 +19,35 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.eran.packcollect.DataBase.Package;
+import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.Location.Address;
 import com.eran.packcollect.Location.SearchLocationCallback;
 import com.eran.packcollect.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-public class EditPackage extends Fragment {
+public class EditProfile extends Fragment {
     private NavController navController;
 
     private EditText address_ET;
-    private EditText description_ET;
-    private EditText additionalNotes_ET;
+    private EditText fullName_ET;
+    private EditText phoneNumber_ET;
     private Button save_BT;
     private ImageButton back_IB;
 
     private Address addressLocation = null;
 
-    private Package aPackage;
-    private FragmentMode fragmentMode;
+    private User aUser;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null) {
-            aPackage = (Package) getArguments().getSerializable("package");
-            fragmentMode = (FragmentMode) getArguments().getSerializable("mode");
+            aUser = (User) getArguments().getSerializable("user");
         }
 
-        if (fragmentMode == null) {
-            fragmentMode = FragmentMode.MY_PACKAGES;
-        }
-
-        return inflater.inflate(R.layout.edit_package, container, false);
+        return inflater.inflate(R.layout.edit_user, container, false);
     }
 
     @Override
@@ -62,11 +57,11 @@ public class EditPackage extends Fragment {
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
+        address_ET = view.findViewById(R.id.home_address_et);
+        fullName_ET = view.findViewById(R.id.full_name_et);
+        phoneNumber_ET = view.findViewById(R.id.phone_number_et);
 
-        address_ET = view.findViewById(R.id.package_location_et);
-        description_ET = view.findViewById(R.id.package_description_et);
-        additionalNotes_ET = view.findViewById(R.id.additional_details_et);
-        save_BT = view.findViewById(R.id.create_request_bt);
+        save_BT = view.findViewById(R.id.update_details_bt);
         back_IB = view.findViewById(R.id.back_button);
 
         address_ET.setOnFocusChangeListener((view1, hasFocus) -> {
@@ -81,7 +76,7 @@ public class EditPackage extends Fragment {
                 @Override
                 public void onSuccess(Address location) {
                     Toast.makeText(view1.getContext(), location.address, Toast.LENGTH_SHORT).show();
-                    save_BT.setEnabled(!description_ET.getText().isEmpty());
+                    save_BT.setEnabled(!fullName_ET.getText().isEmpty());
                     addressLocation = location;
                 }
 
@@ -100,7 +95,7 @@ public class EditPackage extends Fragment {
             }, String.valueOf(address_ET.getText()));
         });
 
-        description_ET.addTextChangedListener(new TextWatcher() {
+        fullName_ET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -115,21 +110,27 @@ public class EditPackage extends Fragment {
             }
         });
 
-        if (aPackage != null) { // update the fields from the exiting package data
-            addressLocation = aPackage.packageAddress;
+        if (aUser != null) { // update the fields from the exiting package data
+            addressLocation = aUser.homeAddress;
             address_ET.setText(addressLocation != null ? addressLocation.toString() : "");
-            description_ET.setText(aPackage.description);
-            additionalNotes_ET.setText(aPackage.additionalNotes);
+            fullName_ET.setText(aUser.fullName);
+            phoneNumber_ET.setText(aUser.phoneNumber);
         }
 
         save_BT.setOnClickListener(view2 -> {
-            String packDescription = description_ET.getText().toString().trim();
-            String packAdditionalNotes = additionalNotes_ET.getText().toString().trim();
+            String userFullName = fullName_ET.getText().toString().trim();
+            String userPhoneNumber = phoneNumber_ET.getText().toString().trim();
 
-            String validation = checkValidation(packDescription);
+            String validation = checkValidation(userFullName);
+
+            if (!validation.isBlank()) {
+                Toast.makeText(view2.getContext(), validation, Toast.LENGTH_LONG).show();
+                save_BT.setEnabled(false);
+                return;
+            }
 
             OnSuccessListener onSuccessListener = o -> {
-                exitToDestination();
+                navController.navigate(R.id.action_editProfile_to_viewProfileFragment);
                 Toast.makeText(view2.getContext(), getString(R.string.package_saved), Toast.LENGTH_SHORT).show();
             };
 
@@ -138,20 +139,14 @@ public class EditPackage extends Fragment {
                 Log.e("DATABASE", "Package write failed: ", e);
             };
 
-            if (!validation.isBlank()) {
-                Toast.makeText(view2.getContext(), validation, Toast.LENGTH_LONG).show();
-                save_BT.setEnabled(false);
-                return;
-            }
+            if (aUser != null) { // Update the exiting package
+                aUser.homeAddress = addressLocation;
+                aUser.fullName = userFullName;
+                aUser.phoneNumber = userPhoneNumber;
 
-            if (aPackage != null) { // Update the exiting package
-                aPackage.packageAddress = addressLocation;
-                aPackage.description = packDescription;
-                aPackage.additionalNotes = packAdditionalNotes;
-
-                aPackage.updateToDataBase(onSuccessListener, onFailureListener);
+                aUser.updateToDataBase(onSuccessListener, onFailureListener);
             } else {
-                Package.savePackageForUser(addressLocation, packDescription, packAdditionalNotes,
+                Package.savePackageForUser(addressLocation, userFullName, userPhoneNumber,
                         onSuccessListener, onFailureListener);
             }
         });
@@ -159,15 +154,10 @@ public class EditPackage extends Fragment {
         back_IB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int action = R.id.action_editPackageFragment_to_viewPackageFragment;
-
-                if (fragmentMode == FragmentMode.MY_PACKAGES && aPackage == null) {
-                    action = R.id.action_editPackageFragment_to_myPackagesFragment;
-                }
+                int action = R.id.action_editProfile_to_viewProfileFragment;
 
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("package", aPackage);
-                bundle.putSerializable("mode", fragmentMode);
+                bundle.putSerializable("package", aUser);
 
                 navController.navigate(action, bundle);
             }
@@ -175,9 +165,9 @@ public class EditPackage extends Fragment {
     }
 
     private String checkValidation(String packDescription) {
-       if (addressLocation == null) {
-           return getString(R.string.package_location_invalid);
-       }
+        if (addressLocation == null) {
+            return getString(R.string.package_location_invalid);
+        }
 
         if (packDescription.isBlank()) {
             return getString(R.string.package_description_empty);
@@ -186,15 +176,8 @@ public class EditPackage extends Fragment {
         return "";
     }
 
-    private void exitToDestination() {
-        int action = R.id.action_editPackageFragment_to_viewPackageFragment;
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("mode", fragmentMode);
-
-        if (fragmentMode == FragmentMode.MY_PACKAGES) {
-            action = R.id.action_editPackageFragment_to_myPackagesFragment;
-        }
-
-        navController.navigate(action, bundle);
+    private boolean isEnabled() {
+        return true;
     }
 }
+

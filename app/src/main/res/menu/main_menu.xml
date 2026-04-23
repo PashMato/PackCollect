@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_person"
+        android:title="Profile"/>
+
+    <item
         android:id="@+id/nav_my_pack"
+        android:icon="@drawable/ic_my_package"
         android:title="My Packages"/>
 
     <item
         android:id="@+id/nav_collect"
+        android:icon="@drawable/ic_public_package"
         android:title="To Collect"/>
 
     <item
         android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
         android:title="Logout"/>
 
 </menu>

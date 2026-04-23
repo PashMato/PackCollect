@@ -7,4 +7,5 @@ public enum FragmentMode implements Serializable {
     COLLECT_PACKAGES,
     MAP_FROM_MY_PACKAGES,
     MAP_FROM_COLLECT_PACKAGES,
+    VIEW_PROFILE,
 }

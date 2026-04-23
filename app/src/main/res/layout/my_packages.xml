@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/my_packages"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
     <!-- MAIN CONTENT -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,7 +15,8 @@
             android:id="@+id/top_toolbar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:title="@string/my_packages"
+            app:title="@string/my_packages"
+            app:titleCentered="true"
             android:paddingTop="15dp"
             android:paddingBottom="10dp"
             app:layout_constraintTop_toTopOf="parent"
@@ -100,7 +100,7 @@
     <!-- SIDE MENU -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"
-        android:layout_width="280dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/main_menu"/>

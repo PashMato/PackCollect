@@ -22,6 +22,9 @@
         <action
             android:id="@+id/action_myPackagesFragment_to_mapFragment"
             app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_MyPackagesFragment_to_viewProfileFragment"
+            app:destination="@id/viewProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/editPackage"
@@ -72,6 +75,9 @@
         <action
             android:id="@+id/action_collectPackFragment_to_mapFragment"
             app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/action_collectPackFragment_to_viewProfileFragment"
+            app:destination="@id/viewProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/viewPackageFragment"
@@ -103,5 +109,27 @@
         <action
             android:id="@+id/action_mapFragment_to_viewPackageFragment"
             app:destination="@id/viewPackageFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/viewProfileFragment"
+        android:name="com.eran.packcollect.Fragments.ViewProfileFragment"
+        android:label="ViewProfileFragment" >
+        <action
+            android:id="@+id/action_viewProfileFragment_to_MyPackagesFragment"
+            app:destination="@id/MyPackagesFragment" />
+        <action
+            android:id="@+id/action_viewProfileFragment_to_collectPackFragment"
+            app:destination="@id/collectPackFragment" />
+        <action
+            android:id="@+id/action_viewProfileFragment_to_editProfile"
+            app:destination="@id/editProfile" />
+    </fragment>
+    <fragment
+        android:id="@+id/editProfile"
+        android:name="com.eran.packcollect.Fragments.EditProfile"
+        android:label="EditProfile" >
+        <action
+            android:id="@+id/action_editProfile_to_viewProfileFragment"
+            app:destination="@id/viewProfileFragment" />
     </fragment>
 </navigation>
