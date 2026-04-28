@@ -144,7 +144,7 @@ public class EditProfile extends Fragment {
                 aUser.fullName = userFullName;
                 aUser.phoneNumber = userPhoneNumber;
 
-                aUser.updateToDataBase(onSuccessListener, onFailureListener);
+                aUser.updateToDatabase(onSuccessListener, onFailureListener);
             } else {
                 Package.savePackageForUser(addressLocation, userFullName, userPhoneNumber,
                         onSuccessListener, onFailureListener);

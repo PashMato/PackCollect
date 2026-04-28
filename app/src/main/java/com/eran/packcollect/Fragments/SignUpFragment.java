@@ -26,12 +26,9 @@ import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.Location.Address;
 import com.eran.packcollect.Location.SearchLocationCallback;
 import com.eran.packcollect.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class SignUpFragment extends Fragment {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -222,24 +219,17 @@ public class SignUpFragment extends Fragment {
                                 return;
                             }
 
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            String uid = user.getUid(); // now not null
-
                             // Save extra user info in Realtime Database
-                            DatabaseReference database = FirebaseDatabase.getInstance().getReference("users");
-                            User newUser = new User(fullName, phoneNumber, addressLocation);
+                            OnSuccessListener onSuccessListener = o -> {
+                                Log.d("DataBase", "User Created!");
+                                navController.navigate(R.id.action_signUpFragment_to_myPackagesFragment);
+                            };
 
-                            database.child(uid).setValue(newUser).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Log.d("DataBase", "User Created!");
-                                        navController.navigate(R.id.action_signUpFragment_to_myPackagesFragment);
-                                    } else {
-                                        Log.e("DataBase", "DB error: " + task.getException().getMessage());
-                                    }
-                                }
-                            });
+                            OnFailureListener onFailureListener = e -> {
+                                Log.e("DataBase", "DB error: " + task.getException().getMessage());
+                            };
+
+                            User.createUser(fullName, phoneNumber, addressLocation, onSuccessListener, onFailureListener);
                         });
             }
         });
