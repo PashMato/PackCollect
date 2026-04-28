@@ -200,8 +200,7 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String fullName = fullName_ET.getText().toString().trim();
-                String editedFullName = fullName.trim()
-                        .replaceAll("\\s+", "."); // handles multiple spaces
+                String editedFullName = User.userNameToEmail(fullName);
                 String password = password_ET.getText().toString().trim();
                 String phoneNumber = phoneNumber_ET.getText().toString().trim();
                 
@@ -211,7 +210,7 @@ public class SignUpFragment extends Fragment {
                     return;
                 }
 
-                mAuth.createUserWithEmailAndPassword( editedFullName + "@gmail.com", password)
+                mAuth.createUserWithEmailAndPassword( editedFullName, password)
                         .addOnCompleteListener(task -> {
                             if (!task.isSuccessful()) {
                                 Toast.makeText(getContext(), getString(R.string.sign_up_text) + ": " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -226,7 +225,11 @@ public class SignUpFragment extends Fragment {
                             };
 
                             OnFailureListener onFailureListener = e -> {
-                                Log.e("DataBase", "DB error: " + task.getException().getMessage());
+                                if (task.getException() != null) {
+                                    Log.e("DataBase", "DB error: " + task.getException().getMessage());
+                                } else {
+                                    Log.e("Database", task.getResult().toString());
+                                }
                             };
 
                             User.createUser(fullName, phoneNumber, addressLocation, onSuccessListener, onFailureListener);

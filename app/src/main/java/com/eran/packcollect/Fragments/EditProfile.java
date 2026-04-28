@@ -1,7 +1,9 @@
 package com.eran.packcollect.Fragments;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,8 +25,19 @@ import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.Location.Address;
 import com.eran.packcollect.Location.SearchLocationCallback;
 import com.eran.packcollect.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Objects;
 
 public class EditProfile extends Fragment {
     private NavController navController;
@@ -139,15 +152,21 @@ public class EditProfile extends Fragment {
                 Log.e("DATABASE", "Package write failed: ", e);
             };
 
-            if (aUser != null) { // Update the exiting package
-                aUser.homeAddress = addressLocation;
-                aUser.fullName = userFullName;
-                aUser.phoneNumber = userPhoneNumber;
+            if (aUser != null) { // Update the exiting user
+                if (!Objects.equals(aUser.fullName, userFullName)) {
+                    showReAuthDialog(User.userNameToEmail(userFullName), task -> {
+                        if (task.isSuccessful()) {
+                            aUser.homeAddress = addressLocation;
+                            aUser.fullName = userFullName;
+                            aUser.phoneNumber = userPhoneNumber;
 
-                aUser.updateToDatabase(onSuccessListener, onFailureListener);
-            } else {
-                Package.savePackageForUser(addressLocation, userFullName, userPhoneNumber,
-                        onSuccessListener, onFailureListener);
+                            aUser.updateToDatabase(onSuccessListener, onFailureListener);
+                            Log.d("FIREBASE", "Email changed successfully");
+                        } else {
+                            Log.e("FIREBASE", "Failed to change email: " + task.getException().getMessage());
+                        }
+                    });
+                }
             }
         });
 
@@ -178,6 +197,46 @@ public class EditProfile extends Fragment {
 
     private boolean isEnabled() {
         return true;
+    }
+
+    private void showReAuthDialog(String newUsername, OnCompleteListener onCompleteListener) {
+        // 1. Inflate the custom layout
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_reauth, null);
+        TextInputEditText passwordEt = dialogView.findViewById(R.id.reauth_password_et);
+
+        // 2. Build the Material Dialog
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
+                .setView(dialogView)
+                .setPositiveButton("Verify", (dialog, which) -> {
+                    String password = passwordEt.getText().toString();
+                    if (!password.isEmpty()) {
+                        reauthenticateAndChangeUsername(password, newUsername, onCompleteListener);
+                    } else {
+                        Toast.makeText(getContext(), "Password required", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+
+    private void reauthenticateAndChangeUsername(String password, String newUsername, OnCompleteListener onCompleteListener) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null) return;
+
+        // 1. Create the credential using the CURRENT email and password
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
+
+        // 2. Re-authenticate
+        user.reauthenticate(credential).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (user != null) {
+                    user.updateEmail(newUsername).addOnCompleteListener(onCompleteListener);
+                }
+            } else {
+                Toast.makeText(getContext(), "Authentication failed. Check your password.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
 

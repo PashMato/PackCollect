@@ -93,5 +93,6 @@
     <string name="user_details">User Details</string>
     <string name="collect_pack">Collect Pack</string>
     <string name="update_details">Update Details</string>
+    <string name="to_change_your_username_please_verify_your_identity_by_entering_your_password">To change your username, please verify your identity by entering your password.</string>
 
 </resources>

@@ -58,4 +58,9 @@ public class User implements Serializable {
                 .addOnSuccessListener(onSuccessListener)
                 .addOnFailureListener(onFailureListener);
     }
+
+    public static String userNameToEmail(String userName) {
+        return userName.trim()
+                .replaceAll("\\s+", ".") + "@gmail.com"; // handles multiple spaces
+    }
 }

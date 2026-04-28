@@ -35,7 +35,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class ViewProfileFragment extends Fragment {
     private NavController navController;
-    private Package currentPackage;
+    private User currentUser;
     private FragmentMode fragmentMode;
     private String ownerUid = "";
     private String ownerPhoneNumber = "";
@@ -77,7 +77,7 @@ public class ViewProfileFragment extends Fragment {
 
         userRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult().exists()) {
-                User currentUser = task.getResult().getValue(User.class);
+                currentUser = task.getResult().getValue(User.class);
                 if (currentUser == null) {
                     return;
                 }
@@ -91,7 +91,7 @@ public class ViewProfileFragment extends Fragment {
         // Edit Button Logic
         editFab.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("package", currentPackage); // Passing the data
+            bundle.putSerializable("user", currentUser); // Passing the data
 
             navController.navigate(R.id.action_viewProfileFragment_to_editProfile, bundle);
         });

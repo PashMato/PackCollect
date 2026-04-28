@@ -35,11 +35,62 @@ public class MainManu {
 
         nav.setNavigationItemSelectedListener(item -> {
 
-            if (item.getItemId() == R.id.nav_collect && mode != FragmentMode.COLLECT_PACKAGES) {
-                navController.navigate(R.id.action_myPackagesFragments_to_collectPackFragment);
+            if (item.getItemId() == R.id.nav_profile) {
+                int action;
+                switch (mode) {
+                    case COLLECT_PACKAGES:
+                        action = R.id.action_collectPackFragment_to_viewProfileFragment;
+                        break;
+                    case MY_PACKAGES:
+                        action = R.id.action_MyPackagesFragment_to_viewProfileFragment;
+                        break;
+                    case VIEW_PROFILE:
+                    default:
+                        action = -1;
+                        break;
+                }
+
+                if (action != -1) {
+                    navController.navigate(action);
+                }
             }
-            else if (item.getItemId() == R.id.nav_my_pack && mode != FragmentMode.MY_PACKAGES) {
-                navController.navigate(R.id.action_collectPackFragment_to_myPackagesFragment);
+            if (item.getItemId() == R.id.nav_collect) {
+                int action;
+                switch (mode) {
+                    case VIEW_PROFILE:
+                        action = R.id.action_viewProfileFragment_to_collectPackFragment;
+                        break;
+                    case MY_PACKAGES:
+                        action = R.id.action_myPackagesFragments_to_collectPackFragment;
+                        break;
+                    case COLLECT_PACKAGES:
+                    default:
+                        action = -1;
+                        break;
+                }
+
+                if (action != -1) {
+                    navController.navigate(action);
+                }
+            }
+            else if (item.getItemId() == R.id.nav_my_pack) {
+                int action;
+                switch (mode) {
+                    case VIEW_PROFILE:
+                        action = R.id.action_viewProfileFragment_to_MyPackagesFragment;
+                        break;
+                    case COLLECT_PACKAGES:
+                        action = R.id.action_collectPackFragment_to_myPackagesFragment;
+                        break;
+                    case MY_PACKAGES:
+                    default:
+                        action = -1;
+                        break;
+                }
+
+                if (action != -1) {
+                    navController.navigate(action);
+                }
             }
             else if (item.getItemId() == R.id.nav_logout) {
                 PackageAlertReceiver.cancelAllNotifications(context); // Cancel all of the user's notifications

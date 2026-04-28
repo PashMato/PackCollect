@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.eran.packcollect.DataBase.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -128,8 +129,7 @@ public class LoginFragment extends Fragment {
         login_BT = view.findViewById(R.id.login_bt);
         login_BT.setOnClickListener(view1 -> {
             String fullName = fullName_ET.getText().toString().trim();
-            String editedFullName = fullName.trim()
-                    .replaceAll("\\s+", "."); // handles multiple spaces
+            String editedFullName = User.userNameToEmail(fullName);
             String password = password_ET.getText().toString().trim();
 
             String validation = checkValidation(fullName, password);
@@ -139,7 +139,7 @@ public class LoginFragment extends Fragment {
                 return;
             }
 
-            mAuth.signInWithEmailAndPassword(editedFullName + "@gmail.com", password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            mAuth.signInWithEmailAndPassword(editedFullName, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if (!task.isSuccessful()) {
