@@ -52,7 +52,7 @@ public class Address implements Serializable {
                         callback.onError(e);
                     }
                 },
-                error -> callback.onError(error)
+                callback::onError
         ) {
             @Override
             public Map<String, String> getHeaders() {
@@ -78,7 +78,7 @@ public class Address implements Serializable {
                 shortName.append(addr.getString("house_number"));
             }
             if (addr.has("road")) {
-                if (!shortName.isEmpty()) {
+                if (0 < shortName.length()) {
                     shortName.append(" ");
                 }
                 shortName.append(addr.getString("road"));
@@ -86,19 +86,19 @@ public class Address implements Serializable {
 
             // locality
             String locality = addr.has("locality") ? addr.getString("locality") : "";
-            if (!shortName.isEmpty() && !locality.isBlank()) shortName.append(", ");
+            if (0 < shortName.length() && !locality.isBlank()) shortName.append(", ");
             shortName.append(locality);
 
             // city or town or village
             String city = addr.has("village") ? addr.getString("village") :
                     addr.has("town") ? addr.getString("town") :
                             addr.has("city") ? addr.getString("city") : "";
-            if (!shortName.isEmpty() && !city.isBlank()) shortName.append(", ");
+            if (0 < shortName.length() && !city.isBlank()) shortName.append(", ");
             shortName.append(city);
 
             // country
             String country = addr.has("country") ? addr.getString("country") : "";
-            if (!shortName.isEmpty() && !country.isBlank()) shortName.append(", ");
+            if (0 < shortName.length() && !country.isBlank()) shortName.append(", ");
             shortName.append(country);
 
         } catch (JSONException e) {

@@ -38,10 +38,7 @@ public class User implements Serializable {
         DatabaseReference targetRef;
 
         // Update existing not create new
-        if (fullName != null && !userUid.isEmpty()) {
-            // We have an ID, so point to the EXISTING node
-            targetRef = packagesRef.child(userUid);
-        } else {
+        if (fullName == null || userUid.isEmpty()) {
             // if No ID exists creating a new package
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -51,9 +48,9 @@ public class User implements Serializable {
             }
 
             userUid = user.getUid();
-            targetRef = packagesRef.child(userUid);
         }
 
+        targetRef = packagesRef.child(userUid);
         targetRef.setValue(this)
                 .addOnSuccessListener(onSuccessListener)
                 .addOnFailureListener(onFailureListener);
@@ -61,6 +58,6 @@ public class User implements Serializable {
 
     public static String userNameToEmail(String userName) {
         return userName.trim()
-                .replaceAll("\\s+", ".") + "@gmail.com"; // handles multiple spaces
+                .replaceAll("\\s+", ".") + "@packcollect.internal"; // handles multiple spaces
     }
 }

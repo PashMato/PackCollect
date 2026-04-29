@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,12 +31,13 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Objects;
+
 public class SignUpFragment extends Fragment {
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
     private Context context;
     private Button signUp_BT;
-    private TextView login_TV;
 
 
     private EditText fullName_ET;
@@ -59,6 +61,9 @@ public class SignUpFragment extends Fragment {
         navController = Navigation.findNavController(view);
         context = view.getContext();
 
+        ProgressBar loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.GONE);
+
         fullName_ET = view.findViewById(R.id.user_name_et);
         password_ET = view.findViewById(R.id.password_et);
         phoneNumber_ET = view.findViewById(R.id.phone_et);
@@ -66,7 +71,7 @@ public class SignUpFragment extends Fragment {
 
 
         signUp_BT = view.findViewById(R.id.sign_in_bt);
-        login_TV = view.findViewById(R.id.login_text);
+        TextView login_TV = view.findViewById(R.id.login_text);
 
 
         fullName_ET.addTextChangedListener(new TextWatcher() {
@@ -81,24 +86,21 @@ public class SignUpFragment extends Fragment {
                 signUp_BT.setEnabled(isEnabled());
             }
         });
-        fullName_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) { // exit if gaining focus
-                    return;
-                }
+        fullName_ET.setOnFocusChangeListener((view1, b) -> {
+            if (b) { // exit if gaining focus
+                return;
+            }
 
-                String result = fullName_ET.getText().toString();
+            String result = fullName_ET.getText().toString();
 
-                if (result.isBlank()) {
-                    signUp_BT.setEnabled(false);
-                    Toast.makeText(view.getContext(), getString(R.string.full_name_required), Toast.LENGTH_LONG).show();
-                    // Do something like enable a button or show an error
-                } else if (!result.contains(" ")) {
-                    Toast.makeText(view.getContext(), getString(R.string.enter_first_last_name), Toast.LENGTH_LONG).show();
-                } else {
-                    signUp_BT.setEnabled(isEnabled());
-                }
+            if (result.isBlank()) {
+                signUp_BT.setEnabled(false);
+                Toast.makeText(view1.getContext(), getString(R.string.full_name_required), Toast.LENGTH_LONG).show();
+                // Do something like enable a button or show an error
+            } else if (!result.contains(" ")) {
+                Toast.makeText(view1.getContext(), getString(R.string.enter_first_last_name), Toast.LENGTH_LONG).show();
+            } else {
+                signUp_BT.setEnabled(isEnabled());
             }
         });
 
@@ -114,56 +116,50 @@ public class SignUpFragment extends Fragment {
                 signUp_BT.setEnabled(isEnabled());
             }
         });
-        password_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) { // exit if gaining focus
-                    return;
-                }
+        password_ET.setOnFocusChangeListener((view2, b) -> {
+            if (b) { // exit if gaining focus
+                return;
+            }
 
-                String result = password_ET.getText().toString();
+            String result = password_ET.getText().toString();
 
-                if (result.length() < 6) {
-                    signUp_BT.setEnabled(false);
-                    Toast.makeText(view.getContext(), "Password has to be at least 6 characters long", Toast.LENGTH_LONG).show();
-                    // Do something like enable a button or show an error
-                } else {
-                    signUp_BT.setEnabled(isEnabled());
-                }
+            if (result.length() < 6) {
+                signUp_BT.setEnabled(false);
+                Toast.makeText(view2.getContext(), "Password has to be at least 6 characters long", Toast.LENGTH_LONG).show();
+                // Do something like enable a button or show an error
+            } else {
+                signUp_BT.setEnabled(isEnabled());
             }
         });
 
-        homeAddress_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean hasFocus) {
-                signUp_BT.setEnabled(false);
-                if (hasFocus) { // exit the function if the focus "begins"
-                    addressLocation = null;
-                    return;
+        homeAddress_ET.setOnFocusChangeListener((view3, hasFocus) -> {
+            signUp_BT.setEnabled(false);
+            if (hasFocus) { // exit the function if the focus "begins"
+                addressLocation = null;
+                return;
+            }
+
+            Address.searchAddress(view3.getContext(), new SearchLocationCallback() {
+                @Override
+                public void onSuccess(Address location) {
+                    Toast.makeText(view3.getContext(), location.address, Toast.LENGTH_SHORT).show();
+                    addressLocation = location;
+                    signUp_BT.setEnabled(isEnabled());
                 }
 
-                Address.searchAddress(view.getContext(), new SearchLocationCallback() {
-                    @Override
-                    public void onSuccess(Address location) {
-                        Toast.makeText(view.getContext(), location.address, Toast.LENGTH_SHORT).show();
-                        addressLocation = location;
-                        signUp_BT.setEnabled(isEnabled());
-                    }
+                @Override
+                public void onNoResult(String query) {
+                    Toast.makeText(view3.getContext(), getString(R.string.location_not_found) + " '" + query + "'", Toast.LENGTH_LONG).show();
+                    addressLocation = null;
+                    signUp_BT.setEnabled(false);
+                }
 
-                    @Override
-                    public void onNoResult(String query) {
-                        Toast.makeText(view.getContext(), getString(R.string.location_not_found) + " '" + query + "'", Toast.LENGTH_LONG).show();
-                        addressLocation = null;
-                        signUp_BT.setEnabled(false);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e("OSM", e.getMessage());
-                        addressLocation = null;
-                    }
-                }, String.valueOf(homeAddress_ET.getText()));
-            }
+                @Override
+                public void onError(Exception e) {
+                    Log.e("OSM", e.getMessage());
+                    addressLocation = null;
+                }
+            }, String.valueOf(homeAddress_ET.getText()));
         });
 
         phoneNumber_ET.addTextChangedListener(new TextWatcher() {
@@ -178,77 +174,70 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
         });
-        phoneNumber_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {return; }
+        phoneNumber_ET.setOnFocusChangeListener((view4, b) -> {
+            if (b) {return; }
 
-                if (phoneNumber_ET.getText().toString().isBlank()) {
-                    Toast.makeText(context, getString(R.string.phone_number_required), Toast.LENGTH_LONG).show();
-                    signUp_BT.setEnabled(false);
-                } else if (!phoneNumber_ET.getText().toString().matches("^\\+?\\d{9,15}$")) {
-                    Toast.makeText(context, getString(R.string.invalid_phone_number), Toast.LENGTH_LONG).show();
-                    signUp_BT.setEnabled(false);
-                } else {
-                    signUp_BT.setEnabled(isEnabled());
-                }
+            if (phoneNumber_ET.getText().toString().isBlank()) {
+                Toast.makeText(context, getString(R.string.phone_number_required), Toast.LENGTH_LONG).show();
+                signUp_BT.setEnabled(false);
+            } else if (!phoneNumber_ET.getText().toString().matches("^\\+?\\d{9,15}$")) {
+                Toast.makeText(context, getString(R.string.invalid_phone_number), Toast.LENGTH_LONG).show();
+                signUp_BT.setEnabled(false);
+            } else {
+                signUp_BT.setEnabled(isEnabled());
             }
         });
         phoneNumber_ET.setOnEditorActionListener(closeKeyboard);
 
-        signUp_BT.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String fullName = fullName_ET.getText().toString().trim();
-                String editedFullName = User.userNameToEmail(fullName);
-                String password = password_ET.getText().toString().trim();
-                String phoneNumber = phoneNumber_ET.getText().toString().trim();
-                
-                String validation = checkValidation(fullName, password, phoneNumber);
-                if (!validation.isEmpty()) {
-                    Toast.makeText(view.getContext(), validation, Toast.LENGTH_LONG).show();
-                    return;
-                }
+        signUp_BT.setEnabled(isEnabled());
+        signUp_BT.setOnClickListener(view5 -> {
+            String fullName = fullName_ET.getText().toString().trim();
+            String editedFullName = User.userNameToEmail(fullName);
+            String password = password_ET.getText().toString().trim();
+            String phoneNumber = phoneNumber_ET.getText().toString().trim();
 
-                mAuth.createUserWithEmailAndPassword( editedFullName, password)
-                        .addOnCompleteListener(task -> {
-                            if (!task.isSuccessful()) {
-                                Toast.makeText(getContext(), getString(R.string.sign_up_text) + ": " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                Log.e("DataBase", "Signup failed: " + task.getException().getMessage());
-                                return;
+            String validation = checkValidation(fullName, password, phoneNumber);
+            if (!validation.isEmpty()) {
+                Toast.makeText(view5.getContext(), validation, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            loadingBar_PB.setVisibility(View.VISIBLE);
+            signUp_BT.setEnabled(false);
+
+            mAuth.createUserWithEmailAndPassword( editedFullName, password)
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            Toast.makeText(getContext(), getString(R.string.sign_up_text) + ": " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e("DataBase", "Signup failed: " + task.getException().getMessage());
+                            return;
+                        }
+
+                        // Save extra user info in Realtime Database
+                        OnSuccessListener onSuccessListener = o -> {
+                            Log.d("DataBase", "User Created!");
+                            navController.navigate(R.id.action_signUpFragment_to_myPackagesFragment);
+                        };
+
+                        OnFailureListener onFailureListener = e -> {
+                            if (task.getException() != null) {
+                                Log.e("DataBase", "DB error: " + task.getException().getMessage());
+                            } else {
+                                Log.e("Database", task.getResult().toString());
                             }
+                        };
 
-                            // Save extra user info in Realtime Database
-                            OnSuccessListener onSuccessListener = o -> {
-                                Log.d("DataBase", "User Created!");
-                                navController.navigate(R.id.action_signUpFragment_to_myPackagesFragment);
-                            };
-
-                            OnFailureListener onFailureListener = e -> {
-                                if (task.getException() != null) {
-                                    Log.e("DataBase", "DB error: " + task.getException().getMessage());
-                                } else {
-                                    Log.e("Database", task.getResult().toString());
-                                }
-                            };
-
-                            User.createUser(fullName, phoneNumber, addressLocation, onSuccessListener, onFailureListener);
-                        });
-            }
+                        User.createUser(fullName, phoneNumber, addressLocation, onSuccessListener, onFailureListener);
+                    });
         });
 
-        login_TV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                navController.navigate(R.id.action_signUpFragment_to_loginFragment);
-            }
-        });
+        login_TV.setOnClickListener(view6 -> navController.navigate(R.id.action_signUpFragment_to_loginFragment));
 
         signUp_BT.setEnabled(false);
     }
     
     private boolean isEnabled() {
-        return !fullName_ET.getText().isEmpty() &&
+        return !fullName_ET.getText().toString().isBlank() &&
                !password_ET.getText().toString().isBlank() && password_ET.getText().length() >= 6 &&
                 addressLocation != null &&
                !phoneNumber_ET.getText().toString().isBlank() && phoneNumber_ET.getText().length() >= 10 &&

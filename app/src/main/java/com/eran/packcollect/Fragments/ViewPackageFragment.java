@@ -8,8 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,6 +67,9 @@ public class ViewPackageFragment extends Fragment {
 
         context = view.getContext();
 
+        ProgressBar loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.VISIBLE);
+
         // Initialize Views
         ImageButton backBtn = view.findViewById(R.id.back_button);
         TextView tvOwner = view.findViewById(R.id.display_owner);
@@ -91,6 +94,8 @@ public class ViewPackageFragment extends Fragment {
 
             userRef.get().addOnCompleteListener(task -> {
                 String name = "null"; // In case the user isn't log in somehow
+                loadingBar_PB.setVisibility(View.GONE);
+
                 if (task.isSuccessful() && task.getResult().exists()) {
                     name = task.getResult().child("fullName").getValue(String.class);
                     ownerUid = currentPackage.ownerUid;
@@ -135,17 +140,12 @@ public class ViewPackageFragment extends Fragment {
         });
 
         // Collect Button Logic
-        collectButton.setOnClickListener(new View.OnClickListener() {
+        collectButton.setOnClickListener(view2 -> NotificationActionReceiver.confirmCollection(context, currentPackage.packageId, new OnCompleteListener() {
             @Override
-            public void onClick(View view) {
-                NotificationActionReceiver.confirmCollection(context, currentPackage.packageId, new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        back();
-                    }
-                });
+            public void onComplete(@NonNull Task task) {
+                back();
             }
-        });
+        }));
 
         if (mAuth.getCurrentUser() != null && mAuth.getCurrentUser().getUid().equals(currentPackage.ownerUid)) { // if the user is the owner
             dailButton.setVisibility(View.GONE);

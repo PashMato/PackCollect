@@ -1,9 +1,7 @@
 package com.eran.packcollect.Fragments;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.Location.Address;
 import com.eran.packcollect.Location.SearchLocationCallback;
@@ -28,25 +26,23 @@ import com.eran.packcollect.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Objects;
 
 public class EditProfile extends Fragment {
     private NavController navController;
 
+    private ProgressBar loadingBar_PB;
     private EditText address_ET;
     private EditText fullName_ET;
     private EditText phoneNumber_ET;
     private Button save_BT;
-    private ImageButton back_IB;
 
     private Address addressLocation;
 
@@ -70,12 +66,15 @@ public class EditProfile extends Fragment {
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
+        loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.GONE);
+
         address_ET = view.findViewById(R.id.home_address_et);
         fullName_ET = view.findViewById(R.id.full_name_et);
         phoneNumber_ET = view.findViewById(R.id.phone_number_et);
 
         save_BT = view.findViewById(R.id.update_details_bt);
-        back_IB = view.findViewById(R.id.back_button);
+        ImageButton back_IB = view.findViewById(R.id.back_button);
 
         address_ET.setOnFocusChangeListener((view1, hasFocus) -> {
             if (hasFocus) { // exit the function if the focus "begins"
@@ -100,7 +99,7 @@ public class EditProfile extends Fragment {
 
                 @Override
                 public void onError(Exception e) {
-                    Log.e("OSM", e.getMessage());
+                    Log.e("OSM", Objects.requireNonNull(e.getMessage()));
                     addressLocation = null;
                     save_BT.setEnabled(isEnabled());
                 }
@@ -192,21 +191,18 @@ public class EditProfile extends Fragment {
                     aUser.updateToDatabase(onSuccessListener, onFailureListener);
                     Log.d("FIREBASE", "Email changed successfully");
                 } else {
-                    Log.e("FIREBASE", "Failed to change email: " + task.getException().getMessage());
+                    Log.e("FIREBASE", "Failed to change email: " + Objects.requireNonNull(task.getException()).getMessage());
                 }
             });
         });
 
-        back_IB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int action = R.id.action_editProfile_to_viewProfileFragment;
+        back_IB.setOnClickListener(view3 -> {
+            int action = R.id.action_editProfile_to_viewProfileFragment;
 
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("package", aUser);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("package", aUser);
 
-                navController.navigate(action, bundle);
-            }
+            navController.navigate(action, bundle);
         });
     }
 
@@ -236,7 +232,6 @@ public class EditProfile extends Fragment {
 
         return "";
     }
-
 
     private boolean isEnabled() {
         return addressLocation != null &&
@@ -268,6 +263,7 @@ public class EditProfile extends Fragment {
 
     private void reauthenticateAndChangeUsername(String password, String newUsername, OnCompleteListener onCompleteListener) {
         save_BT.setEnabled(false);
+        loadingBar_PB.setVisibility(View.VISIBLE);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null || user.getEmail() == null) return;

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,7 +33,6 @@ public class EditPackage extends Fragment {
     private EditText description_ET;
     private EditText additionalNotes_ET;
     private Button save_BT;
-    private ImageButton back_IB;
 
     private Address addressLocation = null;
 
@@ -62,12 +62,14 @@ public class EditPackage extends Fragment {
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
+        ProgressBar loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.GONE);
 
         address_ET = view.findViewById(R.id.package_location_et);
         description_ET = view.findViewById(R.id.package_description_et);
         additionalNotes_ET = view.findViewById(R.id.additional_details_et);
         save_BT = view.findViewById(R.id.create_request_bt);
-        back_IB = view.findViewById(R.id.back_button);
+        ImageButton back_IB = view.findViewById(R.id.back_button);
 
         address_ET.setOnFocusChangeListener((view1, hasFocus) -> {
             save_BT.setEnabled(false);
@@ -81,7 +83,7 @@ public class EditPackage extends Fragment {
                 @Override
                 public void onSuccess(Address location) {
                     Toast.makeText(view1.getContext(), location.address, Toast.LENGTH_SHORT).show();
-                    save_BT.setEnabled(!description_ET.getText().isEmpty());
+                    save_BT.setEnabled(!description_ET.getText().toString().isBlank());
                     addressLocation = location;
                 }
 
@@ -144,6 +146,8 @@ public class EditPackage extends Fragment {
                 return;
             }
 
+            loadingBar_PB.setVisibility(View.VISIBLE);
+
             if (aPackage != null) { // Update the exiting package
                 aPackage.packageAddress = addressLocation;
                 aPackage.description = packDescription;
@@ -156,21 +160,18 @@ public class EditPackage extends Fragment {
             }
         });
 
-        back_IB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int action = R.id.action_editPackageFragment_to_viewPackageFragment;
+        back_IB.setOnClickListener(view3 -> {
+            int action = R.id.action_editPackageFragment_to_viewPackageFragment;
 
-                if (fragmentMode == FragmentMode.MY_PACKAGES && aPackage == null) {
-                    action = R.id.action_editPackageFragment_to_myPackagesFragment;
-                }
-
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("package", aPackage);
-                bundle.putSerializable("mode", fragmentMode);
-
-                navController.navigate(action, bundle);
+            if (fragmentMode == FragmentMode.MY_PACKAGES && aPackage == null) {
+                action = R.id.action_editPackageFragment_to_myPackagesFragment;
             }
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("package", aPackage);
+            bundle.putSerializable("mode", fragmentMode);
+
+            navController.navigate(action, bundle);
         });
     }
 

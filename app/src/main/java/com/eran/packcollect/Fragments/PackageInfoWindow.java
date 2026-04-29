@@ -17,7 +17,7 @@ public class PackageInfoWindow extends InfoWindow {
 
     private final NavController navController;
     private Package currentPackage;
-    private FragmentMode mode;
+    private final FragmentMode mode;
 
     // Pro-Tip: Pass the layout and the navController via constructor
     public PackageInfoWindow(int layoutResId, MapView mapView, NavController navController, FragmentMode mode) {

@@ -1,15 +1,12 @@
 package com.eran.packcollect.Fragments;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,29 +14,16 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.eran.packcollect.DataBase.NotificationFB;
-import com.eran.packcollect.DataBase.NotificationModes;
-import com.eran.packcollect.DataBase.Package;
 import com.eran.packcollect.DataBase.User;
 import com.eran.packcollect.R;
-import com.eran.packcollect.Workers.NotificationActionReceiver;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class ViewProfileFragment extends Fragment {
     private NavController navController;
     private User currentUser;
-    private FragmentMode fragmentMode;
-    private String ownerUid = "";
-    private String ownerPhoneNumber = "";
-    private Context context;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -55,12 +39,15 @@ public class ViewProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        ownerUid = mAuth.getUid();
+        String ownerUid = mAuth.getUid();
 
         // 'view' here is the root view of your fragment layout
         navController = Navigation.findNavController(view);
 
-        context = view.getContext();
+        Context context = view.getContext();
+
+        ProgressBar loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.VISIBLE);
 
         // Initialize Views
         TextView tvUser = view.findViewById(R.id.full_name_tv);
@@ -81,6 +68,8 @@ public class ViewProfileFragment extends Fragment {
                 if (currentUser == null) {
                     return;
                 }
+
+                loadingBar_PB.setVisibility(View.GONE);
 
                 tvUser.setText(currentUser.fullName);
                 tvLocation.setText(currentUser.homeAddress.toString());

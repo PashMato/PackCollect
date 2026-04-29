@@ -2,8 +2,6 @@ package com.eran.packcollect.Table;
 
 import android.annotation.SuppressLint;
 
-import android.content.Context;
-import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eran.packcollect.R;
@@ -22,8 +19,8 @@ import java.util.List;
 
 public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ItemViewHolder> {
     public List<Package> Packages;
-    private OnItemClick onClickListener;
-    private String userUid;
+    private final OnItemClick onClickListener;
+    private final String userUid;
 
     public PackagesAdapter(List<Package> Packages, OnItemClick onClickListener) {
         this.Packages = Packages;
@@ -48,12 +45,7 @@ public class PackagesAdapter extends RecyclerView.Adapter<PackagesAdapter.ItemVi
         holder.Details.setText(item.description);
         holder.Location.setText(item.packageAddress != null ? item.packageAddress.address : "null");
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickListener.OnClick(item);
-            }
-        });
+        holder.itemView.setOnClickListener(view -> onClickListener.OnClick(item));
 
         // Check if the current user is the owner
         if (userUid.equals(item.ownerUid)) {

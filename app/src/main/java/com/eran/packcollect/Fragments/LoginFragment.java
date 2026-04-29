@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,11 +32,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.eran.packcollect.R;
 
 public class LoginFragment extends Fragment {
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private final FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private NavController navController;
     private Context context;
     private Button login_BT;
-    private TextView signUp_TV;
 
 
     private EditText fullName_ET;
@@ -56,6 +56,9 @@ public class LoginFragment extends Fragment {
 
         context = view.getContext();
 
+        ProgressBar loadingBar_PB = view.findViewById(R.id.loading_spinner);
+        loadingBar_PB.setVisibility(View.GONE);
+
         fullName_ET = view.findViewById(R.id.user_name_et);
         password_ET = view.findViewById(R.id.password_et);
 
@@ -72,24 +75,21 @@ public class LoginFragment extends Fragment {
                         !password_ET.toString().isBlank() && password_ET.toString().length() >= 6);
             }
         });
-        fullName_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) { // exit if gaining focus
-                    return;
-                }
+        fullName_ET.setOnFocusChangeListener((view2, b) -> {
+            if (b) { // exit if gaining focus
+                return;
+            }
 
-                String result = fullName_ET.getText().toString();
+            String result = fullName_ET.getText().toString();
 
-                if (result.isBlank()) {
-                    login_BT.setEnabled(false);
-                    Toast.makeText(view.getContext(), getString(R.string.full_name_required), Toast.LENGTH_LONG).show();
-                    // Do something like enable a button or show an error
-                } else if (!result.contains(" ")) {
-                    Toast.makeText(view.getContext(), getString(R.string.enter_first_last_name), Toast.LENGTH_LONG).show();
-                } else {
-                    login_BT.setEnabled(password_ET.getText().length() >= 6);
-                }
+            if (result.isBlank()) {
+                login_BT.setEnabled(false);
+                Toast.makeText(view2.getContext(), getString(R.string.full_name_required), Toast.LENGTH_LONG).show();
+                // Do something like enable a button or show an error
+            } else if (!result.contains(" ")) {
+                Toast.makeText(view2.getContext(), getString(R.string.enter_first_last_name), Toast.LENGTH_LONG).show();
+            } else {
+                login_BT.setEnabled(password_ET.getText().length() >= 6);
             }
         });
         fullName_ET.setOnEditorActionListener(closeKeyboard);
@@ -103,25 +103,22 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                login_BT.setEnabled(!fullName_ET.getText().isEmpty() && !s.toString().isBlank() && s.toString().length() >= 6);
+                login_BT.setEnabled(!fullName_ET.getText().toString().isBlank() && !s.toString().isBlank() && s.toString().length() >= 6);
             }
         });
-        password_ET.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) { // exit if gaining focus
-                    return;
-                }
+        password_ET.setOnFocusChangeListener((view3, b) -> {
+            if (b) { // exit if gaining focus
+                return;
+            }
 
-                String result = password_ET.getText().toString();
+            String result = password_ET.getText().toString();
 
-                if (result.length() < 6) {
-                    login_BT.setEnabled(false);
-                    Toast.makeText(view.getContext(), "Password has to be at least 6 characters long", Toast.LENGTH_LONG).show();
-                    // Do something like enable a button or show an error
-                } else {
-                    login_BT.setEnabled(!fullName_ET.getText().isEmpty());
-                }
+            if (result.length() < 6) {
+                login_BT.setEnabled(false);
+                Toast.makeText(view3.getContext(), "Password has to be at least 6 characters long", Toast.LENGTH_LONG).show();
+                // Do something like enable a button or show an error
+            } else {
+                login_BT.setEnabled(!fullName_ET.getText().toString().isBlank());
             }
         });
         password_ET.setOnEditorActionListener(closeKeyboard);
@@ -139,18 +136,17 @@ public class LoginFragment extends Fragment {
                 return;
             }
 
-            mAuth.signInWithEmailAndPassword(editedFullName, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (!task.isSuccessful()) {
-                        Log.d("DataBase", task.getException().getMessage());
-                        Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+            loadingBar_PB.setVisibility(View.VISIBLE);
 
-                    Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
-                    navController.navigate(R.id.action_loginFragment_to_myPackagesFragment);
+            mAuth.signInWithEmailAndPassword(editedFullName, password).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.d("DataBase", task.getException().getMessage());
+                    Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
+                navController.navigate(R.id.action_loginFragment_to_myPackagesFragment);
             });
         });
 
@@ -158,14 +154,9 @@ public class LoginFragment extends Fragment {
             Toast.makeText(getContext(), "User login!", Toast.LENGTH_SHORT).show();
             navController.navigate(R.id.action_loginFragment_to_myPackagesFragment);
         }
-        // TODO: add loading when log in is pressed
-        signUp_TV = view.findViewById(R.id.sign_in_text);
-        signUp_TV.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                navController.navigate(R.id.action_loginFragment_to_signUpFragment);
-            }
-        });
+
+        TextView signUp_TV = view.findViewById(R.id.sign_in_text);
+        signUp_TV.setOnClickListener(view4 -> navController.navigate(R.id.action_loginFragment_to_signUpFragment));
     }
 
     private String checkValidation(String fullName, String password) {

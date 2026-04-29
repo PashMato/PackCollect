@@ -96,10 +96,24 @@ public class MainManu {
                 PackageAlertReceiver.cancelAllNotifications(context); // Cancel all of the user's notifications
 
                 FirebaseAuth.getInstance().signOut();
-                if (mode == FragmentMode.MY_PACKAGES) {
-                    navController.navigate(R.id.action_myPackagesFragment_to_loginFragment);
-                } else {
-                    navController.navigate(R.id.action_collectPackFragment_to_loginFragment);
+                int action;
+                switch (mode) {
+                    case MY_PACKAGES:
+                        action = R.id.action_myPackagesFragment_to_loginFragment;
+                        break;
+                    case COLLECT_PACKAGES:
+                        action = R.id.action_collectPackFragment_to_loginFragment;
+                        break;
+                    case VIEW_PROFILE:
+                        action = R.id.action_viewProfileFragment_to_loginFragment;
+                        break;
+                    default:
+                        action = -1;
+                        break;
+                }
+
+                if (action != -1) {
+                    navController.navigate(action);
                 }
             }
 
