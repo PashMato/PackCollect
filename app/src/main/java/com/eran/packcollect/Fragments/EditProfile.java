@@ -48,7 +48,7 @@ public class EditProfile extends Fragment {
     private Button save_BT;
     private ImageButton back_IB;
 
-    private Address addressLocation = null;
+    private Address addressLocation;
 
     private User aUser;
 
@@ -78,34 +78,50 @@ public class EditProfile extends Fragment {
         back_IB = view.findViewById(R.id.back_button);
 
         address_ET.setOnFocusChangeListener((view1, hasFocus) -> {
-            save_BT.setEnabled(false);
-
             if (hasFocus) { // exit the function if the focus "begins"
-                addressLocation = null;
                 return;
             }
 
+            addressLocation = null;
             Address.searchAddress(view1.getContext(), new SearchLocationCallback() {
                 @Override
                 public void onSuccess(Address location) {
                     Toast.makeText(view1.getContext(), location.address, Toast.LENGTH_SHORT).show();
-                    save_BT.setEnabled(!fullName_ET.getText().isEmpty());
                     addressLocation = location;
+                    save_BT.setEnabled(isEnabled());
                 }
 
                 @Override
                 public void onNoResult(String query) {
                     Toast.makeText(view1.getContext(), getString(R.string.location_not_found) + " '" + query + "' ", Toast.LENGTH_LONG).show();
-                    save_BT.setEnabled(false);
                     addressLocation = null;
+                    save_BT.setEnabled(isEnabled());
                 }
 
                 @Override
                 public void onError(Exception e) {
                     Log.e("OSM", e.getMessage());
                     addressLocation = null;
+                    save_BT.setEnabled(isEnabled());
                 }
             }, String.valueOf(address_ET.getText()));
+        });
+        address_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!address_ET.hasFocus()) {
+                    return;
+                }
+
+                addressLocation = null;
+                save_BT.setEnabled(isEnabled());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
         });
 
         fullName_ET.addTextChangedListener(new TextWatcher() {
@@ -117,9 +133,20 @@ public class EditProfile extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String result = s.toString();
+                save_BT.setEnabled(isEnabled());
+            }
+        });
 
-                save_BT.setEnabled(addressLocation != null && !result.isBlank());
+        phoneNumber_ET.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                save_BT.setEnabled(isEnabled());
             }
         });
 
@@ -134,7 +161,7 @@ public class EditProfile extends Fragment {
             String userFullName = fullName_ET.getText().toString().trim();
             String userPhoneNumber = phoneNumber_ET.getText().toString().trim();
 
-            String validation = checkValidation(userFullName);
+            String validation = checkValidation(userFullName, userPhoneNumber);
 
             if (!validation.isBlank()) {
                 Toast.makeText(view2.getContext(), validation, Toast.LENGTH_LONG).show();
@@ -152,22 +179,22 @@ public class EditProfile extends Fragment {
                 Log.e("DATABASE", "Package write failed: ", e);
             };
 
-            if (aUser != null) { // Update the exiting user
-                if (!Objects.equals(aUser.fullName, userFullName)) {
-                    showReAuthDialog(User.userNameToEmail(userFullName), task -> {
-                        if (task.isSuccessful()) {
-                            aUser.homeAddress = addressLocation;
-                            aUser.fullName = userFullName;
-                            aUser.phoneNumber = userPhoneNumber;
-
-                            aUser.updateToDatabase(onSuccessListener, onFailureListener);
-                            Log.d("FIREBASE", "Email changed successfully");
-                        } else {
-                            Log.e("FIREBASE", "Failed to change email: " + task.getException().getMessage());
-                        }
-                    });
-                }
+            if (aUser == null) { // Update the exiting user
+                return;
             }
+
+            showReAuthDialog(User.userNameToEmail(userFullName), task -> {
+                if (task.isSuccessful()) {
+                    aUser.homeAddress = addressLocation;
+                    aUser.fullName = userFullName;
+                    aUser.phoneNumber = userPhoneNumber;
+
+                    aUser.updateToDatabase(onSuccessListener, onFailureListener);
+                    Log.d("FIREBASE", "Email changed successfully");
+                } else {
+                    Log.e("FIREBASE", "Failed to change email: " + task.getException().getMessage());
+                }
+            });
         });
 
         back_IB.setOnClickListener(new View.OnClickListener() {
@@ -183,20 +210,39 @@ public class EditProfile extends Fragment {
         });
     }
 
-    private String checkValidation(String packDescription) {
-        if (addressLocation == null) {
-            return getString(R.string.package_location_invalid);
+    private String checkValidation(String fullName, String phoneNumber) {
+        // --- Validation ---
+        if (fullName.isEmpty()) {
+            return getString(R.string.full_name_required);
         }
 
-        if (packDescription.isBlank()) {
-            return getString(R.string.package_description_empty);
+        if (!fullName.contains(" ")) {
+            return getString(R.string.enter_first_last_name);
+        }
+
+        if (phoneNumber.isEmpty()) {
+            return getString(R.string.phone_number_required);
+        }
+
+        // Basic phone check (digits only, 9–15 digits)
+        if (!phoneNumber.matches("^\\+?\\d{9,15}$")) {
+            return getString(R.string.invalid_phone_number);
+        }
+
+        // Check if the location is right
+        if (addressLocation == null) {
+            return getString(R.string.invalid_location);
         }
 
         return "";
     }
 
+
     private boolean isEnabled() {
-        return true;
+        return addressLocation != null &&
+                !fullName_ET.getText().toString().isBlank() &&
+                !phoneNumber_ET.getText().toString().isBlank() && phoneNumber_ET.getText().length() >= 10 &&
+                phoneNumber_ET.getText().toString().matches("^\\+?\\d{9,15}$");
     }
 
     private void showReAuthDialog(String newUsername, OnCompleteListener onCompleteListener) {
@@ -221,6 +267,8 @@ public class EditProfile extends Fragment {
     }
 
     private void reauthenticateAndChangeUsername(String password, String newUsername, OnCompleteListener onCompleteListener) {
+        save_BT.setEnabled(false);
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null || user.getEmail() == null) return;
 
@@ -230,11 +278,10 @@ public class EditProfile extends Fragment {
         // 2. Re-authenticate
         user.reauthenticate(credential).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                if (user != null) {
-                    user.updateEmail(newUsername).addOnCompleteListener(onCompleteListener);
-                }
+                user.updateEmail(newUsername).addOnCompleteListener(onCompleteListener);
             } else {
                 Toast.makeText(getContext(), "Authentication failed. Check your password.", Toast.LENGTH_SHORT).show();
+                save_BT.setEnabled(isEnabled());
             }
         });
     }
